@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — BlueChain</title>
+  <meta name="description" content="Access your organisation's carbon workspace.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --deep-forest: #07140F;
+      --forest: #0B1F17;
+      --mangrove: #123C2A;
+      --moss: #4F7F3A;
+      --leaf: #72A84A;
+      --water: #173B52;
+      --sky: #79B8C8;
+      --warm-white: #F3F1E8;
+      --muted: #8DA898;
+      --border: rgba(114, 168, 74, 0.15);
+      --err: #e05454;
+      --form-bg: rgba(18, 60, 42, 0.25);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--deep-forest);
+      color: var(--warm-white);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── LEFT PANEL ── */
+    .panel-left {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px;
+      background: var(--forest);
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .panel-left-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: var(--warm-white);
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo span {
+      color: var(--leaf);
+    }
+
+    .left-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .left-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--warm-white);
+      margin-bottom: 16px;
+    }
+
+    .left-title em {
+      font-style: normal;
+      color: var(--leaf);
+    }
+
+    .left-sub {
+      font-size: 0.9375rem;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 340px;
+    }
+
+    .left-footer {
+      position: relative;
+      z-index: 2;
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .pixel-wrap {
+      position: relative;
+      z-index: 2;
+      margin: 32px 0;
+    }
+
+    #loginCanvas {
+      display: block;
+      width: 100%;
+      image-rendering: pixelated;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── RIGHT PANEL ── */
+    .panel-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 64px 48px;
+      background: var(--deep-forest);
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(121, 184, 200, 0.08);
+      border: 1px solid rgba(121, 184, 200, 0.2);
+      color: var(--sky);
+      margin-bottom: 24px;
+    }
+
+    .demo-badge.hidden {
+      display: none;
+    }
+
+    .form-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .form-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      background: var(--form-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.9375rem;
+      color: var(--warm-white);
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: rgba(114, 168, 74, 0.5);
+      box-shadow: 0 0 0 3px rgba(114, 168, 74, 0.08);
+    }
+
+    input::placeholder {
+      color: rgba(141, 168, 152, 0.5);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px 24px;
+      background: var(--leaf);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--deep-forest);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.02em;
+      margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+      background: #85c058;
+    }
+
+    .btn-submit:disabled {
+      background: rgba(114, 168, 74, 0.3);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .form-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      font-size: 0.8125rem;
+    }
+
+    .form-links a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .form-links a:hover {
+      color: var(--leaf);
+    }
+
+    .form-links a.accent {
+      color: var(--leaf);
+    }
+
+    .error-box {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(224, 84, 84, 0.1);
+      border: 1px solid rgba(224, 84, 84, 0.3);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: var(--err);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: var(--muted);
+      font-size: 0.8125rem;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .demo-hint {
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(121, 184, 200, 0.05);
+      border: 1px solid rgba(121, 184, 200, 0.15);
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .demo-hint strong {
+      color: var(--sky);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-left {
+        display: none;
+      }
+
+      .panel-right {
+        padding: 40px 24px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="panel-left">
+    <canvas class="panel-left-bg" id="bgCanvas"></canvas>
+    <a href="/static/landing.html" class="logo">BLUE<span>CHAIN</span></a>
+    <div class="left-content">
+      <div class="pixel-wrap">
+        <canvas id="loginCanvas" width="400" height="240"></canvas>
+      </div>
+      <div class="left-title">Your carbon<br>workspace <em>awaits.</em></div>
+      <p class="left-sub">Satellite imagery. ML inference. Blockchain verification. One platform for the entire carbon
+        project lifecycle.</p>
+    </div>
+    <div class="left-footer">Carbon intelligence. Verified impact.</div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+    <div class="form-container">
+      <h1 class="form-title">Welcome back.</h1>
+      <p class="form-sub">Access your organisation's carbon workspace.</p>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email">Work Email</label>
+          <input type="email" id="email" name="email" placeholder="you@organisation.com" autocomplete="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password"
+            required>
+        </div>
+        <button type="submit" class="btn-submit" id="submitBtn">SIGN IN</button>
+        <div class="error-box" id="errorBox"></div>
+      </form>
+
+      <div class="form-links">
+        <a href="#">Forgot password?</a>
+        <a href="/static/signup.html" class="accent">Create account →</a>
+      </div>
+
+      <div class="demo-hint" id="demoHint">
+        <strong>Demo mode active.</strong> Use <strong>demo@bluechain.io</strong> / <strong>demo1234</strong><br>
+        or <strong>admin@bluechain.io</strong> / <strong>admin1234</strong> to sign in.
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth module -->
+  <script>
+    // Inline Firebase config slot — override via window.__FIREBASE_CONFIG__ before this runs
+    window.__FIREBASE_CONFIG__ = window.__FIREBASE_CONFIG__ || {
+      apiKey: "AIzaSyDQqBtuQJ1Ify_mEh7e_1GhMnvl2zLOg_c",
+      authDomain: "bluechain-d98ca.firebaseapp.com",
+      projectId: "bluechain-d98ca",
+      storageBucket: "bluechain-d98ca.firebasestorage.app",
+      messagingSenderId: "485088876242",
+      appId: "1:485088876242:web:5851d928d6030af798ff0b",
+      measurementId: "G-ZPSLBEK9NG"
+
+    };
+  </script>
+  <script src="/static/auth.js"></script>
+  <script>
+    // Hide demo credentials hint when Firebase is properly configured
+    if (!BlueChainAuth.isDemoMode) {
+      const hint = document.getElementById('demoHint');
+      if (hint) hint.style.display = 'none';
+    }
+
+    // Form submit
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const err = document.getElementById('errorBox');
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        await BlueChainAuth.login(email, password);
+        window.location.href = '/';
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'SIGN IN';
+      }
+    });
+
+    // Redirect if already logged in
+    (function () {
+      try {
+        if (BlueChainAuth.getCurrentUser()) window.location.href = '/';
+      } catch (e) { }
+    })();
+
+    // ── Background pixel canvas ──────────────────────────────────────────────────
+    (function drawBg() {
+      const canvas = document.getElementById('bgCanvas');
+      const parent = canvas.parentElement;
+      canvas.width = parent.offsetWidth || 600;
+      canvas.height = parent.offsetHeight || 900;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height, PX = 6;
+      const cols = Math.ceil(W / PX), rows = Math.ceil(H / PX);
+      const C = { bg: '#0B1F17', dark: '#07140F', leaf: '#123C2A', leaf2: '#1a5438', accent: 'rgba(114,168,74,0.06)' };
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) ctx.fillStyle = C.bg, ctx.fillRect(c * PX, r * PX, PX, PX);
+      // Subtle grid dots
+      for (let r = 0; r < rows; r += 4) for (let c = 0; c < cols; c += 4) {
+        ctx.globalAlpha = 0.15; ctx.fillStyle = C.leaf2; ctx.fillRect(c * PX, r * PX, 2, 2); ctx.globalAlpha = 1;
+      }
+    })();
+
+    // ── Login side pixel art ─────────────────────────────────────────────────────
+    (function drawLoginArt() {
+      const canvas = document.getElementById('loginCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height, PX = 4;
+      const cols = Math.ceil(W / PX), rows = Math.ceil(H / PX);
+      const C = {
+        sky: '#0a2233', sky2: '#0d2d40', water: '#0e2535', water2: '#122e44',
+        trunk: '#071a10', leaf1: '#0B1F17', leaf2: '#123C2A', leaf3: '#1a5438', leaf4: '#4F7F3A', leaf5: '#72A84A',
+        star: '#79B8C8'
+      };
+      // Sky
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        ctx.fillStyle = r < rows * 0.55 ? (r < rows * 0.3 ? C.sky : C.sky2) : (r < rows * 0.7 ? C.water : C.water2);
+        ctx.fillRect(c * PX, r * PX, PX, PX);
+      }
+      // Stars
+      [[2, 1], [7, 2], [13, 1], [20, 3], [30, 2], [40, 1], [55, 3], [65, 2], [75, 1], [85, 3], [95, 2]].forEach(([sc, sr]) => {
+        if (sc < cols && sr < rows) { ctx.globalAlpha = 0.7; ctx.fillStyle = C.star; ctx.fillRect(sc * PX, sr * PX, PX, PX); ctx.globalAlpha = 1; }
+      });
+      function drawTree(cx, top, h, w) {
+        for (let r = top; r < rows * 0.72; r++) { ctx.fillStyle = C.trunk; ctx.fillRect(cx * PX, r * PX, PX, PX); }
+        [[0, w, C.leaf1], [2, w + 2, C.leaf2], [4, w + 3, C.leaf3], [6, w + 2, C.leaf4], [8, w, C.leaf3]].forEach(([dy, lw, col]) => {
+          for (let dc = -lw; dc <= lw; dc++) { if (Math.abs(dc) === lw && Math.random() < 0.3) continue; ctx.fillStyle = col; ctx.fillRect((cx + dc) * PX, (top + dy) * PX, PX, PX); }
+        });
+      }
+      drawTree(8, 5, 25, 5); drawTree(2, 8, 22, 4); drawTree(cols - 9, 4, 26, 6); drawTree(cols - 3, 7, 23, 4);
+      drawTree(cols / 2 | 0, 10, 18, 3); drawTree((cols / 2 | 0) + 6, 12, 16, 3); drawTree((cols / 2 | 0) - 6, 11, 17, 3);
+      // Ripples
+      [[5, 45], [15, 48], [25, 45], [35, 50], [45, 47], [55, 51], [65, 45], [75, 48], [85, 50], [95, 46]].forEach(([sc, sr]) => {
+        if (sc < cols && sr < rows) { ctx.globalAlpha = 0.4; ctx.fillStyle = C.star; ctx.fillRect(sc * PX, sr * PX, PX, PX); ctx.globalAlpha = 1; }
+      });
+      // Fog
+      const g = ctx.createLinearGradient(0, H * 0.6, 0, H);
+      g.addColorStop(0, 'rgba(7,20,15,0)'); g.addColorStop(1, 'rgba(7,20,15,0.5)');
+      ctx.fillStyle = g; ctx.fillRect(0, H * 0.6, W, H * 0.4);
+    })();
+  </script>
+</body>
+
+</html>

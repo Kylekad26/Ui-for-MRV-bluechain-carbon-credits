@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Intelligence | BlueChain Explainable AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        .monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #07140F; color: #F3F1E8; }
+        .pixel-leaf {
+            width: 8px; height: 8px; background: #72A84A;
+            box-shadow: 8px 0 #72A84A, 0 8px #72A84A, 16px 8px #72A84A, 8px 16px #72A84A;
+        }
+        .data-line { position: relative; height: 1px; background: #123C2A; width: 100%; margin: 2rem 0; overflow: hidden; }
+        .data-line::after {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 30%; 
+            background: linear-gradient(90deg, transparent, #72A84A, transparent);
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+<!-- BlueChain App Shell Nav -->
+<nav class="flex items-center justify-between px-6 py-4 bg-[#0B1F17] border-b border-[#123C2A] sticky top-0 z-50 shadow-sm">
+  <div class="flex items-center space-x-8">
+    <a href="/" class="text-xl font-bold tracking-tight text-slate-100" style="font-family: 'Space Grotesk', sans-serif;">BLUE<span class="text-[#72A84A]">CHAIN</span></a>
+    <div class="hidden md:flex space-x-6">
+      <a href="/static/model-intelligence.html" class="text-sm font-medium text-[#72A84A] border-b-2 border-[#72A84A] pb-4 -mb-4.5" style="margin-bottom: -17px;">Model Intelligence</a>
+      <a href="/" class="text-sm font-medium text-[#8DA898] hover:text-white transition-colors">MRV & Registry</a>
+      <a href="/static/identity.html" class="text-sm font-medium text-[#8DA898] hover:text-white transition-colors" id="nav-identity-link">Identity</a>
+    </div>
+  </div>
+  <a href="/" class="text-sm text-[#79B8C8] hover:text-white underline">← Back to Dashboard</a>
+</nav>
+
+<!-- Hero Section -->
+<header class="max-w-5xl mx-auto pt-16 pb-12 px-6 relative overflow-hidden">
+    <div class="absolute right-10 top-20 opacity-20"><div class="pixel-leaf" style="transform: scale(3);"></div></div>
+    <div class="absolute left-40 top-10 opacity-10"><div class="pixel-leaf" style="transform: scale(1.5);"></div></div>
+    
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight" style="font-family: 'Space Grotesk', sans-serif;">
+        MODEL INTELLIGENCE
+    </h1>
+    <p class="text-lg text-[#8DA898] max-w-2xl font-medium leading-relaxed">
+        See why the model believes your ecosystem stores this much carbon. 
+        <br>Understand how BlueChain's model evaluates carbon potential.
+    </p>
+</header>
+
+<div class="data-line max-w-5xl mx-auto"></div>
+
+<main class="max-w-5xl mx-auto px-6 space-y-16">
+
+    <!-- Model Overview & Pipeline -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Model Overview -->
+        <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-8 shadow-lg relative">
+            <h2 class="text-[#72A84A] text-sm font-bold uppercase tracking-widest mb-6">Model Overview</h2>
+            
+            <div class="space-y-5">
+                <div class="flex justify-between border-b border-[#123C2A]/50 pb-3">
+                    <span class="text-[#8DA898]">Algorithm</span>
+                    <span class="text-white font-medium" id="info-model">RandomForestRegressor</span>
+                </div>
+                <div class="flex justify-between border-b border-[#123C2A]/50 pb-3">
+                    <span class="text-[#8DA898]">Domain</span>
+                    <span class="text-white font-medium">Blue Carbon / Mangrove</span>
+                </div>
+                <div class="flex justify-between border-b border-[#123C2A]/50 pb-3">
+                    <span class="text-[#8DA898]">Region</span>
+                    <span class="text-white font-medium" id="info-region">Sundarbans</span>
+                </div>
+                <div class="flex justify-between pb-3">
+                    <span class="text-[#8DA898]">Latest Prediction</span>
+                    <span class="text-[#79B8C8] font-bold text-lg" id="info-prediction">-- tC</span>
+                </div>
+            </div>
+            
+            <div class="mt-8 p-4 bg-[#123C2A]/20 border border-[#4F7F3A]/20 rounded text-sm text-[#8DA898]">
+                <strong class="text-[#72A84A]">Status:</strong> Connected to production inference endpoint.
+            </div>
+        </div>
+
+        <!-- Pipeline Visual -->
+        <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-8 shadow-lg flex flex-col justify-center items-center">
+            <h2 class="text-[#72A84A] text-sm font-bold uppercase tracking-widest w-full text-left mb-8">Verification Pipeline</h2>
+            
+            <div class="flex flex-col items-center space-y-2 text-sm font-medium text-[#F3F1E8] w-full max-w-[200px]">
+                <div class="w-full py-2 bg-[#123C2A] border border-[#72A84A]/30 text-center rounded">SATELLITE DATA</div>
+                <div class="text-[#72A84A]">↓</div>
+                <div class="w-full py-2 bg-[#123C2A] border border-[#72A84A]/30 text-center rounded">FEATURE EXTRACTION</div>
+                <div class="text-[#72A84A]">↓</div>
+                <div class="w-full py-2 bg-[#123C2A] border border-[#72A84A]/50 text-center rounded shadow-[0_0_15px_rgba(114,168,74,0.15)] text-[#72A84A]">RANDOM FOREST</div>
+                <div class="text-[#72A84A]">↓</div>
+                <div class="w-full py-2 bg-[#123C2A] border border-[#72A84A]/30 text-center rounded">CARBON PREDICTION</div>
+                <div class="text-[#72A84A]">↓</div>
+                <div class="w-full py-2 bg-[#79B8C8]/20 border border-[#79B8C8]/50 text-center rounded text-[#79B8C8]">EXPLANATION</div>
+                <div class="text-[#72A84A]">↓</div>
+                <div class="w-full py-2 bg-[#123C2A] border border-[#72A84A]/30 text-center rounded">CREDIT SCORE</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- XAI UI Framework / Visualization -->
+    <section>
+        <h2 class="text-2xl font-bold text-white mb-2" style="font-family: 'Space Grotesk', sans-serif;">Explainability Engine</h2>
+        <p class="text-[#8DA898] mb-6">Global feature importances extracted from the Random Forest model.</p>
+        
+        <div class="bg-[#0B1F17] border border-[#123C2A] rounded-xl p-8 shadow-lg relative overflow-hidden" id="xai-chart-container">
+            <!-- Chart will be injected by JS -->
+            <div class="text-center text-[#8DA898]">Waiting for prediction data...</div>
+        </div>
+    </section>
+
+    <!-- Genuine Feature Cards -->
+    <section>
+        <h2 class="text-xl font-bold text-white mb-6" style="font-family: 'Space Grotesk', sans-serif;">Verified Input Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="feature-cards">
+            <!-- Cards will be injected by JS -->
+            <div class="bg-[#0B1F17] rounded border border-[#123C2A] p-6 text-center text-[#8DA898]">Waiting for prediction data...</div>
+        </div>
+    </section>
+
+    <!-- Why This Matters -->
+    <section class="border-t border-[#123C2A] pt-12 pb-8">
+        <h2 class="text-2xl font-bold text-white mb-10 text-center" style="font-family: 'Space Grotesk', sans-serif;">Why XAI Matters for Blue Carbon</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-[#123C2A]/50 border border-[#72A84A]/30 flex items-center justify-center mx-auto mb-4 text-[#72A84A]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                </div>
+                <h3 class="text-white font-bold mb-2">TRANSPARENCY</h3>
+                <p class="text-[#8DA898] text-sm">Understand what influences the carbon estimate.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-[#123C2A]/50 border border-[#72A84A]/30 flex items-center justify-center mx-auto mb-4 text-[#72A84A]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                </div>
+                <h3 class="text-white font-bold mb-2">AUDITABILITY</h3>
+                <p class="text-[#8DA898] text-sm">Give verifiers a clearer view of model reasoning.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-[#123C2A]/50 border border-[#72A84A]/30 flex items-center justify-center mx-auto mb-4 text-[#72A84A]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <h3 class="text-white font-bold mb-2">TRUST</h3>
+                <p class="text-[#8DA898] text-sm">Make AI-assisted carbon measurement easier to scrutinize.</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const rawData = localStorage.getItem('bluechain_last_estimate');
+        if (!rawData) return;
+        
+        try {
+            const data = JSON.parse(rawData);
+            
+            // Populate Overview
+            if (data.model_info) {
+                document.getElementById('info-model').textContent = data.model_info.model || 'RandomForestRegressor';
+                document.getElementById('info-region').textContent = (data.model_info.dataset || 'Sundarbans').split(' ')[0];
+            }
+            if (data.total_carbon_stock_tC) {
+                document.getElementById('info-prediction').textContent = 
+                    Number(data.total_carbon_stock_tC).toLocaleString(undefined, {maximumFractionDigits: 0}) + ' tC';
+            }
+            
+            // Generate Feature Cards based on real data exposed by API
+            const cardsContainer = document.getElementById('feature-cards');
+            let cardsHTML = '';
+            
+            // XAI Chart Population
+            if (data.feature_importances && data.total_carbon_stock_tC) {
+                const ndviImp = (data.feature_importances.NDVI * 100).toFixed(1);
+                const latImp = (data.feature_importances.lat * 100).toFixed(1);
+                const lonImp = (data.feature_importances.lon * 100).toFixed(1);
+                
+                document.getElementById('xai-chart-container').innerHTML = `
+                    <div class="text-center mb-8">
+                        <p class="text-[#8DA898] text-sm font-medium uppercase tracking-widest">Model Prediction</p>
+                        <p class="text-3xl font-bold text-[#79B8C8] mt-1">${Number(data.total_carbon_stock_tC).toLocaleString(undefined, {maximumFractionDigits: 0})} tC</p>
+                    </div>
+                    
+                    <div class="w-px h-8 bg-[#4F7F3A] mx-auto mb-2"></div>
+                    <div class="w-3/4 h-px bg-[#4F7F3A] mx-auto mb-6 relative">
+                        <div class="absolute left-0 -top-1 w-2 h-2 bg-[#4F7F3A] rounded-full"></div>
+                        <div class="absolute right-0 -top-1 w-2 h-2 bg-[#4F7F3A] rounded-full"></div>
+                        <div class="absolute left-1/2 -top-1 w-2 h-2 bg-[#72A84A] rounded-full -translate-x-1/2"></div>
+                    </div>
+                    
+                    <div class="flex justify-between max-w-lg mx-auto">
+                        <div class="text-center flex-1">
+                            <p class="text-white font-medium mb-1">NDVI</p>
+                            <p class="text-[#72A84A] font-bold text-lg mb-2">${ndviImp}%</p>
+                            <div class="h-24 bg-[#123C2A] w-12 mx-auto rounded overflow-hidden flex items-end">
+                                <div class="w-full bg-[#72A84A]" style="height: ${ndviImp}%;"></div>
+                            </div>
+                        </div>
+                        <div class="text-center flex-1 border-l border-r border-[#123C2A]">
+                            <p class="text-white font-medium mb-1">Latitude</p>
+                            <p class="text-[#72A84A] font-bold text-lg mb-2">${latImp}%</p>
+                            <div class="h-24 bg-[#123C2A] w-12 mx-auto rounded overflow-hidden flex items-end">
+                                <div class="w-full bg-[#72A84A]" style="height: ${latImp}%;"></div>
+                            </div>
+                        </div>
+                        <div class="text-center flex-1">
+                            <p class="text-white font-medium mb-1">Longitude</p>
+                            <p class="text-[#72A84A] font-bold text-lg mb-2">${lonImp}%</p>
+                            <div class="h-24 bg-[#123C2A] w-12 mx-auto rounded overflow-hidden flex items-end">
+                                <div class="w-full bg-[#72A84A]" style="height: ${lonImp}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-center text-xs text-[#8DA898] mt-8">Global Feature Importances (Gini Impurity Decrease) determining node splits in the Random Forest.</p>
+                `;
+            }
+            
+            // NDVI
+            if (data.NDVI !== undefined) {
+                cardsHTML += `
+                <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-6 shadow-sm hover:border-[#4F7F3A]/50 transition-colors">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-white font-bold text-lg">NDVI</h3>
+                        <span class="bg-[#123C2A] text-[#72A84A] px-2 py-1 rounded text-xs font-bold monospace">${Number(data.NDVI).toFixed(3)}</span>
+                    </div>
+                    <p class="text-[#79B8C8] text-sm font-medium mb-3">Vegetation health</p>
+                    <p class="text-[#8DA898] text-sm leading-relaxed">Normalized Difference Vegetation Index. Source: ${data.ndvi_source || 'Sentinel-2'}. Higher values strongly correlate with dense mangrove canopy cover.</p>
+                </div>`;
+            }
+            
+            // Soil Carbon
+            if (data.soc_density_tC_ha !== undefined) {
+                cardsHTML += `
+                <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-6 shadow-sm hover:border-[#4F7F3A]/50 transition-colors">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-white font-bold text-lg">SOIL</h3>
+                        <span class="bg-[#123C2A] text-[#72A84A] px-2 py-1 rounded text-xs font-bold monospace">${Number(data.soc_density_tC_ha).toFixed(1)} tC/ha</span>
+                    </div>
+                    <p class="text-[#79B8C8] text-sm font-medium mb-3">Soil carbon potential</p>
+                    <p class="text-[#8DA898] text-sm leading-relaxed">Derived from regional typology (Murdiyarso et al.). Soil represents ~72% of total carbon in intact mangrove ecosystems.</p>
+                </div>`;
+            }
+            
+            // AGB
+            if (data.agb_density_tC_ha !== undefined) {
+                cardsHTML += `
+                <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-6 shadow-sm hover:border-[#4F7F3A]/50 transition-colors">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-white font-bold text-lg">VEGETATION</h3>
+                        <span class="bg-[#123C2A] text-[#72A84A] px-2 py-1 rounded text-xs font-bold monospace">${Number(data.agb_density_tC_ha).toFixed(1)} tC/ha</span>
+                    </div>
+                    <p class="text-[#79B8C8] text-sm font-medium mb-3">Above-ground biomass</p>
+                    <p class="text-[#8DA898] text-sm leading-relaxed">Calculated from total carbon stock. Accounts for stems, branches, and leaves.</p>
+                </div>`;
+            }
+            
+            // Satellite Quality
+            if (data.satellite_meta) {
+                const cloud = data.satellite_meta.cloud_cover_percent || 0;
+                cardsHTML += `
+                <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-6 shadow-sm hover:border-[#4F7F3A]/50 transition-colors">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-white font-bold text-lg">SATELLITE QUALITY</h3>
+                        <span class="bg-[#123C2A] text-[#72A84A] px-2 py-1 rounded text-xs font-bold monospace">${cloud.toFixed(1)}% Cloud Cover</span>
+                    </div>
+                    <p class="text-[#79B8C8] text-sm font-medium mb-3">Observation reliability</p>
+                    <p class="text-[#8DA898] text-sm leading-relaxed">Affects model confidence. Low cloud cover ensures accurate NDVI calculation and boundary validation.</p>
+                </div>`;
+            }
+            
+            if (cardsHTML) {
+                cardsContainer.innerHTML = cardsHTML;
+            }
+            
+        } catch (e) {
+            console.error('Failed to parse estimate data', e);
+        }
+    });
+</script>
+</body>
+</html>

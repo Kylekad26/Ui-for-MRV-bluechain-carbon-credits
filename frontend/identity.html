@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueChain Identity | Demo Onboarding</title>
+    <meta name="description" content="Create your BlueChain demo identity — demonstration only, no real Aadhaar data collected.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <script src="/static/auth.js"></script>
+    <script>
+        const currentUser = BlueChainAuth.getCurrentUser();
+        if (!currentUser) { window.location.href = '/static/landing.html'; }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .font-grotesk { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Step indicator */
+        .step-dot {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 600;
+            transition: all 0.3s;
+        }
+        .step-dot.active  { background: #72A84A; color: #07140F; }
+        .step-dot.done    { background: #123C2A; color: #72A84A; border: 1px solid #72A84A; }
+        .step-dot.pending { background: #0B1F17; color: #8DA898; border: 1px solid #123C2A; }
+        .step-line { flex: 1; height: 1px; background: #123C2A; }
+
+        /* Field styling */
+        .bc-input {
+            width: 100%;
+            background: rgba(18,60,42,0.25);
+            border: 1px solid rgba(114,168,74,0.15);
+            border-radius: 0.375rem;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem; color: white;
+            outline: none; transition: border-color 0.2s;
+        }
+        .bc-input:focus { border-color: rgba(114,168,74,0.5); }
+        .bc-input::placeholder { color: #8DA898; }
+        select.bc-input option { background: #0B1F17; color: white; }
+
+        /* Aadhaar input grid */
+        .aadhaar-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+        .aadhaar-seg {
+            background: rgba(18,60,42,0.25);
+            border: 1px solid rgba(114,168,74,0.15);
+            border-radius: 0.375rem;
+            padding: 0.625rem;
+            font-size: 0.875rem; color: white;
+            text-align: center; letter-spacing: 0.2em;
+            outline: none; width: 100%;
+        }
+        .aadhaar-seg:focus { border-color: rgba(114,168,74,0.5); }
+        .aadhaar-sep { color: #8DA898; display: flex; align-items: center; justify-content: center; }
+
+        /* Verification animation */
+        @keyframes pulse-green { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .pulse-green { animation: pulse-green 1s ease-in-out infinite; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0B1F17; }
+        ::-webkit-scrollbar-thumb { background: #123C2A; border-radius: 4px; }
+
+        /* Card slide-in */
+        @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+        .slide-up { animation: slideUp 0.4s ease-out; }
+
+        /* Pixel mangrove decorative border top */
+        .pixel-top {
+            height: 4px;
+            background: repeating-linear-gradient(90deg, #72A84A 0px, #72A84A 8px, transparent 8px, transparent 12px,
+                        #4F7F3A 12px, #4F7F3A 20px, transparent 20px, transparent 24px);
+        }
+    </style>
+</head>
+<body class="bg-[#07140F] text-slate-100 min-h-screen">
+
+<!-- Pixel-art decorative top bar -->
+<div class="pixel-top"></div>
+
+<!-- Nav -->
+<nav class="flex items-center justify-between px-6 py-4 bg-[#0B1F17] border-b border-[#123C2A] sticky top-0 z-50 shadow-sm">
+  <div class="flex items-center space-x-8">
+    <a href="/" class="text-xl font-bold tracking-tight text-slate-100 font-grotesk">BLUE<span class="text-[#72A84A]">CHAIN</span></a>
+    <div class="hidden md:flex space-x-6">
+      <a href="/" class="text-sm font-medium text-[#8DA898] hover:text-white transition-colors">MRV & Registry</a>
+      <a href="/static/identity.html" class="text-sm font-medium text-[#72A84A] border-b-2 border-[#72A84A]" style="margin-bottom:-17px; padding-bottom:17px;">Identity</a>
+    </div>
+  </div>
+  <div class="flex items-center space-x-4">
+    <div class="hidden md:block text-right">
+      <div id="nav-user" class="text-sm font-medium text-slate-200"></div>
+      <div id="nav-role" class="text-xs text-[#8DA898]"></div>
+    </div>
+    <button onclick="BlueChainAuth.logout()" class="px-3 py-1.5 text-xs font-medium bg-[#123C2A] hover:bg-[#1a5438] border border-[#4F7F3A]/30 rounded text-slate-200 transition-colors">Sign Out</button>
+  </div>
+</nav>
+
+<!-- Page content -->
+<div class="max-w-2xl mx-auto px-4 py-12 space-y-8">
+
+    <!-- Demo warning banner -->
+    <div class="bg-[#B97A2E]/15 border border-[#B97A2E]/40 rounded-lg px-5 py-3 flex items-start gap-3">
+        <span class="text-[#f5a13d] text-lg mt-0.5">⚠</span>
+        <div>
+            <p class="text-[#f5a13d] text-sm font-semibold">DEMO IDENTITY VERIFICATION</p>
+            <p class="text-[#f5a13d]/80 text-xs mt-0.5">Simulation — no real Aadhaar data is collected or transmitted. This is a product demonstration only.</p>
+        </div>
+    </div>
+
+    <!-- SECTION A: Profile already exists -->
+    <div id="section-profile" class="hidden slide-up">
+        <div class="bg-[#0B1F17] border border-[#123C2A] rounded-xl overflow-hidden">
+            <div class="pixel-top"></div>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-white font-grotesk">BlueChain Identity</h2>
+                    <span class="px-3 py-1 bg-[#123C2A] text-[#72A84A] text-xs font-bold rounded-full border border-[#4F7F3A]/40">DEMO</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-[#07140F] rounded-lg p-4 border border-[#123C2A]">
+                        <p class="text-[#8DA898] text-xs uppercase tracking-wider mb-1">Full Name</p>
+                        <p id="prof-name" class="text-white font-medium"></p>
+                    </div>
+                    <div class="bg-[#07140F] rounded-lg p-4 border border-[#123C2A]">
+                        <p class="text-[#8DA898] text-xs uppercase tracking-wider mb-1">Organization</p>
+                        <p id="prof-org" class="text-white font-medium"></p>
+                    </div>
+                    <div class="bg-[#07140F] rounded-lg p-4 border border-[#123C2A]">
+                        <p class="text-[#8DA898] text-xs uppercase tracking-wider mb-1">Role</p>
+                        <p id="prof-role" class="text-white font-medium"></p>
+                    </div>
+                    <div class="bg-[#07140F] rounded-lg p-4 border border-[#123C2A]">
+                        <p class="text-[#8DA898] text-xs uppercase tracking-wider mb-1">Demo Aadhaar</p>
+                        <p id="prof-aadhaar" class="text-[#8DA898] font-mono text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- Identity status -->
+                <div class="bg-[#123C2A]/30 border border-[#4F7F3A]/30 rounded-lg p-4 mb-4 flex items-center gap-3">
+                    <div class="text-[#72A84A] text-xl">✓</div>
+                    <div>
+                        <p class="text-[#72A84A] font-semibold text-sm">IDENTITY · Demo Verified</p>
+                        <p class="text-[#8DA898] text-xs">Demo identity verified · Aadhaar-linked — DEMONSTRATION ONLY</p>
+                    </div>
+                </div>
+
+                <!-- Wallet status -->
+                <div class="bg-[#173B52]/20 border border-[#173B52]/40 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[#79B8C8] font-semibold text-sm">✓ AADHAAR-LINKED WALLET</p>
+                        <span class="text-xs bg-[#123C2A] text-[#72A84A] px-2 py-0.5 rounded border border-[#4F7F3A]/30">TESTNET</span>
+                    </div>
+                    <p class="text-[#8DA898] text-xs uppercase tracking-wider mb-1 mt-3">Wallet Address</p>
+                    <div class="flex items-center gap-2">
+                        <p id="prof-wallet" class="text-[#79B8C8] font-mono text-xs break-all flex-1"></p>
+                        <button onclick="copyWallet()" class="text-[#8DA898] hover:text-white flex-shrink-0" title="Copy address">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-[#8DA898] text-xs mt-1">Derived from Aadhaar hash via SHA-256 · Simulation only</p>
+                </div>
+
+                <!-- BCO2 Credit Balance -->
+                <div class="bg-[#07140F] border border-[#123C2A] rounded-lg p-4 mb-6">
+                    <p class="text-[#8DA898] text-xs uppercase tracking-wider mb-3">BCO2 Carbon Credit Balance</p>
+                    <div class="flex items-end gap-2">
+                        <p id="prof-balance" class="text-3xl font-bold text-[#72A84A]">—</p>
+                        <p class="text-[#8DA898] text-sm mb-1">$BCO2 tokens</p>
+                    </div>
+                    <p id="prof-balance-sub" class="text-[#8DA898] text-xs mt-1">Checking on-chain balance...</p>
+                </div>
+
+                <button onclick="resetIdentity()" class="text-xs text-[#8DA898] hover:text-[#e05454] transition-colors underline">Reset demo identity</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION B: Onboarding wizard -->
+    <div id="section-onboarding" class="hidden slide-up">
+        <div class="bg-[#0B1F17] border border-[#123C2A] rounded-xl overflow-hidden">
+            <div class="pixel-top"></div>
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-white font-grotesk mb-1">Create Your BlueChain Identity</h1>
+                <p class="text-[#8DA898] text-sm mb-8">Demo onboarding flow · Aadhaar-style verification · No real data collected</p>
+
+                <!-- Step indicator -->
+                <div class="flex items-center mb-8" id="step-indicator">
+                    <div class="step-dot active" id="dot-1">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot pending" id="dot-2">2</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot pending" id="dot-3">3</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot pending" id="dot-4">4</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot pending" id="dot-5">✓</div>
+                </div>
+
+                <!-- Step 1: Name -->
+                <div id="step-1" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-2 uppercase tracking-wider">Step 1 of 4 — Full Name</label>
+                        <input type="text" id="inp-name" class="bc-input" placeholder="e.g. Harsh Patel" autocomplete="name">
+                        <p class="text-[#8DA898] text-xs mt-1">Enter your full name as it will appear on carbon certificates.</p>
+                    </div>
+                    <button onclick="goStep(2)" class="w-full bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2.5 px-4 rounded shadow transition-colors">
+                        Continue →
+                    </button>
+                </div>
+
+                <!-- Step 2: Demo Aadhaar -->
+                <div id="step-2" class="hidden space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-2 uppercase tracking-wider">Step 2 of 5 — Simulated Aadhaar ID</label>
+                        <p class="text-[#f5a13d] text-xs mb-3 bg-[#B97A2E]/10 border border-[#B97A2E]/30 rounded px-3 py-2">
+                            ⚠ Simulation only — use any 12-digit number. Do NOT enter your real Aadhaar.
+                        </p>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="aad-1" class="aadhaar-seg" maxlength="4" placeholder="1234" oninput="this.value=this.value.replace(/\D/g,''); if(this.value.length===4) document.getElementById('aad-2').focus()">
+                            <span class="aadhaar-sep text-[#8DA898]">–</span>
+                            <input type="text" id="aad-2" class="aadhaar-seg" maxlength="4" placeholder="5678" oninput="this.value=this.value.replace(/\D/g,''); if(this.value.length===4) document.getElementById('aad-3').focus()">
+                            <span class="aadhaar-sep text-[#8DA898]">–</span>
+                            <input type="text" id="aad-3" class="aadhaar-seg" maxlength="4" placeholder="9012" oninput="this.value=this.value.replace(/\D/g,'')">
+                        </div>
+                        <p class="text-[#8DA898] text-xs mt-2">12 digits, any combination.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="goStep(1)" class="flex-1 bg-[#123C2A] hover:bg-[#1a5438] text-white py-2.5 px-4 rounded transition-colors text-sm">← Back</button>
+                        <button onclick="sendOtp()" class="flex-[2] bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2.5 px-4 rounded shadow transition-colors">Send OTP →</button>
+                    </div>
+                </div>
+
+                <!-- Step 2b: OTP -->
+                <div id="step-2b" class="hidden space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-2 uppercase tracking-wider">Step 3 of 5 — OTP Verification</label>
+                        <div class="bg-[#123C2A]/20 border border-[#4F7F3A]/30 rounded-lg p-3 mb-4 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-[#72A84A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            <p class="text-[#72A84A] text-xs font-medium">Simulated OTP sent to registered mobile. Use <strong>1 2 3 4 5 6</strong> for demo.</p>
+                        </div>
+                        <div class="flex gap-2 justify-center">
+                            <input type="text" id="otp-1" class="aadhaar-seg w-10 text-center" maxlength="1" oninput="this.value=this.value.replace(/\D/g,''); if(this.value) document.getElementById('otp-2').focus()">
+                            <input type="text" id="otp-2" class="aadhaar-seg w-10 text-center" maxlength="1" oninput="this.value=this.value.replace(/\D/g,''); if(this.value) document.getElementById('otp-3').focus()">
+                            <input type="text" id="otp-3" class="aadhaar-seg w-10 text-center" maxlength="1" oninput="this.value=this.value.replace(/\D/g,''); if(this.value) document.getElementById('otp-4').focus()">
+                            <input type="text" id="otp-4" class="aadhaar-seg w-10 text-center" maxlength="1" oninput="this.value=this.value.replace(/\D/g,''); if(this.value) document.getElementById('otp-5').focus()">
+                            <input type="text" id="otp-5" class="aadhaar-seg w-10 text-center" maxlength="1" oninput="this.value=this.value.replace(/\D/g,''); if(this.value) document.getElementById('otp-6').focus()">
+                            <input type="text" id="otp-6" class="aadhaar-seg w-10 text-center" maxlength="1" oninput="this.value=this.value.replace(/\D/g,'')">
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="goStep(2)" class="flex-1 bg-[#123C2A] hover:bg-[#1a5438] text-white py-2.5 px-4 rounded transition-colors text-sm">← Back</button>
+                        <button onclick="verifyOtp()" class="flex-[2] bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2.5 px-4 rounded shadow transition-colors">Verify OTP →</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Organization -->
+                <div id="step-3" class="hidden space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-2 uppercase tracking-wider">Step 4 of 5 — Organization</label>
+                        <input type="text" id="inp-org" class="bc-input" placeholder="e.g. Sundarbans Conservation Trust" autocomplete="organization">
+                        <p class="text-[#8DA898] text-xs mt-1">Appears on carbon certificates you issue.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="showStep('step-2b')" class="flex-1 bg-[#123C2A] hover:bg-[#1a5438] text-white py-2.5 px-4 rounded transition-colors text-sm">← Back</button>
+                        <button onclick="goStep(4)" class="flex-[2] bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2.5 px-4 rounded shadow transition-colors">Continue →</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Role -->
+                <div id="step-4" class="hidden space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-2 uppercase tracking-wider">Step 5 of 5 — Your Role</label>
+                        <select id="inp-role" class="bc-input">
+                            <option value="" disabled selected>Select your role</option>
+                            <option value="Organization Admin">Organization Admin</option>
+                            <option value="Carbon Manager">Carbon Manager</option>
+                            <option value="Project Manager">Project Manager</option>
+                            <option value="Verifier / Auditor">Verifier / Auditor</option>
+                            <option value="Viewer">Viewer</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="goStep(3)" class="flex-1 bg-[#123C2A] hover:bg-[#1a5438] text-white py-2.5 px-4 rounded transition-colors text-sm">← Back</button>
+                        <button onclick="runVerification()" class="flex-[2] bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2.5 px-4 rounded shadow transition-colors">Link Wallet & Confirm ✓</button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Verification animation -->
+                <div id="step-5" class="hidden">
+                    <div class="text-center py-8 space-y-6">
+                        <div id="verify-state-1" class="hidden">
+                            <div class="w-16 h-16 mx-auto rounded-full border-4 border-[#72A84A]/30 border-t-[#72A84A] animate-spin mb-4"></div>
+                            <p class="text-[#72A84A] font-semibold text-lg pulse-green">VERIFYING IDENTITY...</p>
+                            <p class="text-[#8DA898] text-sm mt-1">Simulating identity check — no real data sent</p>
+                        </div>
+                        <div id="verify-state-2" class="hidden">
+                            <div class="w-16 h-16 mx-auto bg-[#123C2A] rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
+                            <p class="text-[#72A84A] font-semibold text-lg">IDENTITY VERIFIED</p>
+                            <p class="text-[#8DA898] text-sm mt-1">Creating your BlueChain wallet...</p>
+                        </div>
+                        <div id="verify-state-3" class="hidden slide-up">
+                            <div class="w-16 h-16 mx-auto bg-[#123C2A] rounded-full flex items-center justify-center mb-4 text-3xl">🌿</div>
+                            <p class="text-[#72A84A] font-bold text-xl mb-1">DEMO IDENTITY CONFIRMED</p>
+                            <p class="text-[#8DA898] text-sm">Your BlueChain demo wallet has been created</p>
+                            <div class="mt-6 bg-[#07140F] border border-[#123C2A] rounded-lg p-4 text-left">
+                                <p class="text-[#8DA898] text-xs uppercase tracking-wider mb-2">Demo Wallet Address</p>
+                                <p id="new-wallet" class="text-[#79B8C8] font-mono text-sm break-all"></p>
+                                <p class="text-[#8DA898]/60 text-xs mt-2">Demo wallet — DEMONSTRATION ONLY · Not connected to real funds</p>
+                            </div>
+                            <button onclick="window.location.href='/'" class="mt-6 w-full bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2.5 px-4 rounded shadow transition-colors">
+                                Go to MRV Dashboard →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Legal footer -->
+    <p class="text-center text-[#8DA898]/50 text-xs">
+        BlueChain Demo Identity · No real government data is collected · UIDAI not integrated
+    </p>
+</div>
+
+<script>
+    const IDENTITY_KEY = 'bluechain_demo_identity';
+    let currentStep = 1;
+
+    // Populate nav
+    (function() {
+        const u = BlueChainAuth.getCurrentUser();
+        if (u) {
+            document.getElementById('nav-user').textContent = u.displayName || u.email;
+            document.getElementById('nav-role').textContent = (u.organization || '') + (u.role ? ' • ' + u.role : '');
+        }
+    })();
+
+    // On load: check for existing identity
+    function loadPage() {
+        const stored = localStorage.getItem(IDENTITY_KEY);
+        if (stored) {
+            try {
+                const id = JSON.parse(stored);
+                showProfile(id);
+            } catch {
+                showOnboarding();
+            }
+        } else {
+            showOnboarding();
+        }
+    }
+
+    function showProfile(id) {
+        document.getElementById('section-profile').classList.remove('hidden');
+        document.getElementById('section-onboarding').classList.add('hidden');
+        document.getElementById('prof-name').textContent    = id.name;
+        document.getElementById('prof-org').textContent     = id.organization;
+        document.getElementById('prof-role').textContent    = id.role;
+        document.getElementById('prof-aadhaar').textContent = id.aadhaarDemo;
+        document.getElementById('prof-wallet').textContent  = id.walletAddress;
+        loadCreditBalance(id.walletAddress);
+    }
+
+    function showOnboarding() {
+        document.getElementById('section-onboarding').classList.remove('hidden');
+        document.getElementById('section-profile').classList.add('hidden');
+    }
+
+    function resetIdentity() {
+        if (!confirm('Reset your demo identity? This only removes the local demo data.')) return;
+        localStorage.removeItem(IDENTITY_KEY);
+        showOnboarding();
+        goStep(1);
+    }
+
+    // Step navigation
+    function goStep(n) {
+        // Validate before advancing
+        if (n === 2 && !document.getElementById('inp-name').value.trim()) {
+            document.getElementById('inp-name').focus();
+            document.getElementById('inp-name').style.borderColor = '#e05454';
+            return;
+        }
+        if (n === 3) {
+            const a1 = document.getElementById('aad-1').value.trim();
+            const a2 = document.getElementById('aad-2').value.trim();
+            const a3 = document.getElementById('aad-3').value.trim();
+            if (!a1 || !a2 || !a3) {
+                alert('Please fill in all three Aadhaar segments.');
+                return;
+            }
+        }
+        if (n === 5 && !document.getElementById('inp-org').value.trim()) {
+            document.getElementById('inp-org').focus();
+            document.getElementById('inp-org').style.borderColor = '#e05454';
+            return;
+        }
+
+        // Hide all steps, show target
+        for (let i = 1; i <= 5; i++) {
+            document.getElementById('step-' + i).classList.add('hidden');
+            const dot = document.getElementById('dot-' + i);
+            if (i < n)       { dot.className = 'step-dot done'; dot.textContent = '✓'; }
+            else if (i === n) { dot.className = 'step-dot active'; dot.textContent = i < 5 ? i : '✓'; }
+            else              { dot.className = 'step-dot pending'; dot.textContent = i < 5 ? i : '✓'; }
+        }
+        document.getElementById('step-' + n).classList.remove('hidden');
+        currentStep = n;
+    }
+
+    function sendOtp() {
+        const a1 = document.getElementById('aad-1').value.trim();
+        const a2 = document.getElementById('aad-2').value.trim();
+        const a3 = document.getElementById('aad-3').value.trim();
+        if (a1.length < 4 || a2.length < 4 || a3.length < 4) {
+            alert('Please enter a valid 12-digit simulated Aadhaar number.');
+            return;
+        }
+        // Hide step 2, show OTP step
+        document.getElementById('step-2').classList.add('hidden');
+        document.getElementById('step-2b').classList.remove('hidden');
+        document.getElementById('otp-1').focus();
+    }
+
+    function showStep(id) {
+        ['step-1','step-2','step-2b','step-3','step-4','step-5'].forEach(s => {
+            document.getElementById(s).classList.add('hidden');
+        });
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function verifyOtp() {
+        const otp = ['otp-1','otp-2','otp-3','otp-4','otp-5','otp-6']
+            .map(id => document.getElementById(id).value).join('');
+        if (otp !== '123456') {
+            alert('Incorrect OTP. Use 1 2 3 4 5 6 for this simulation.');
+            return;
+        }
+        goStep(3);
+    }
+
+    async function runVerification() {
+        const role = document.getElementById('inp-role').value;
+        if (!role) { alert('Please select your role.'); return; }
+
+        goStep(5);
+        document.getElementById('verify-state-1').classList.remove('hidden');
+        await delay(2000);
+
+        const name  = document.getElementById('inp-name').value.trim();
+        const org   = document.getElementById('inp-org').value.trim();
+        const a1    = document.getElementById('aad-1').value.trim();
+        const a2    = document.getElementById('aad-2').value.trim();
+        const a3    = document.getElementById('aad-3').value.trim();
+        const aadhaarDemo = `${a1}-${a2}-${a3}`;
+
+        // Derive wallet deterministically via SHA-256(aadhaar digits only)
+        const aadhaarDigits = (a1 + a2 + a3).replace(/\D/g, '');
+        const wallet = await deriveWallet(aadhaarDigits);
+
+        document.getElementById('verify-state-1').classList.add('hidden');
+        document.getElementById('verify-state-2').classList.remove('hidden');
+        await delay(1200);
+
+        const identity = { name, organization: org, role, aadhaarDemo, walletAddress: wallet, createdAt: new Date().toISOString(), isDemoOnly: true };
+        localStorage.setItem(IDENTITY_KEY, JSON.stringify(identity));
+
+        document.getElementById('new-wallet').textContent = wallet;
+        document.getElementById('verify-state-2').classList.add('hidden');
+        document.getElementById('verify-state-3').classList.remove('hidden');
+    }
+
+    async function deriveWallet(aadhaarDigits) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode('bluechain_v1_' + aadhaarDigits);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return '0x' + hashHex.substring(0, 40);
+    }
+
+    async function loadCreditBalance(walletAddress) {
+        const balEl = document.getElementById('prof-balance');
+        const subEl = document.getElementById('prof-balance-sub');
+        try {
+            const res = await fetch('/api/health');
+            if (!res.ok) throw new Error();
+            // Real balance check would call token contract — for now query registry
+            const regRes = await fetch('/api/registry');
+            if (regRes.ok) {
+                const data = await regRes.json();
+                const projects = (data.projects || []);
+                // Sum credits where oracle address matches (testnet uses oracle wallet)
+                const totalCredits = projects.reduce((sum, p) => sum + parseFloat(p.credits_minted || 0), 0);
+                balEl.textContent = totalCredits.toLocaleString('en-IN', {maximumFractionDigits: 2});
+                subEl.textContent = `${projects.length} project(s) on-chain · Testnet simulation`;
+            } else {
+                balEl.textContent = '—';
+                subEl.textContent = 'Could not fetch balance (backend offline)';
+            }
+        } catch {
+            balEl.textContent = '—';
+            subEl.textContent = 'Balance check unavailable';
+        }
+    }
+
+    function copyWallet() {
+        const w = document.getElementById('prof-wallet').textContent;
+        if (w && navigator.clipboard) navigator.clipboard.writeText(w);
+    }
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    loadPage();
+</script>
+</body>
+</html>

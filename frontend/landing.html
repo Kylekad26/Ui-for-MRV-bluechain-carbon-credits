@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlueChain — Carbon Intelligence. Verified Impact.</title>
+  <meta name="description" content="BlueChain brings carbon measurement, verification and project intelligence into one platform.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --deep-forest: #07140F;
+      --forest:      #0B1F17;
+      --mangrove:    #123C2A;
+      --moss:        #4F7F3A;
+      --leaf:        #72A84A;
+      --water:       #173B52;
+      --sky:         #79B8C8;
+      --earth:       #6A4E35;
+      --warm-white:  #F3F1E8;
+      --muted:       #8DA898;
+      --border:      rgba(114,168,74,0.15);
+      --card-bg:     rgba(18,60,42,0.35);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--deep-forest);
+      color: var(--warm-white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+      background: rgba(7,20,15,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem; font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--warm-white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--leaf); }
+    .nav-links {
+      display: flex; align-items: center; gap: 40px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.875rem; font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--warm-white); }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-ghost {
+      padding: 8px 20px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.8125rem; font-weight: 500;
+      color: var(--warm-white);
+      text-decoration: none;
+      transition: all 0.2s;
+      background: transparent;
+      cursor: pointer;
+    }
+    .btn-ghost:hover { border-color: var(--leaf); color: var(--leaf); }
+    .btn-primary {
+      padding: 8px 20px;
+      background: var(--leaf);
+      border: 1px solid var(--leaf);
+      border-radius: 6px;
+      font-size: 0.8125rem; font-weight: 600;
+      color: var(--deep-forest);
+      text-decoration: none;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+    }
+    .btn-primary:hover { background: #85c058; border-color: #85c058; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 0 48px;
+      gap: 64px;
+      padding-top: 64px;
+      position: relative;
+    }
+    .hero-content { padding: 48px 0; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.75rem; font-weight: 500;
+      color: var(--leaf);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 32px;
+      background: rgba(114,168,74,0.06);
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 6px; height: 6px;
+      background: var(--leaf); border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--warm-white);
+      margin-bottom: 24px;
+    }
+    h1 em { font-style: normal; color: var(--leaf); }
+    .hero-sub {
+      font-size: 1.0625rem; line-height: 1.7;
+      color: var(--muted);
+      max-width: 480px;
+      margin-bottom: 40px;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-hero-primary {
+      padding: 14px 32px;
+      background: var(--leaf);
+      border: 1px solid var(--leaf);
+      border-radius: 8px;
+      font-size: 0.9375rem; font-weight: 600;
+      color: var(--deep-forest);
+      text-decoration: none;
+      transition: all 0.25s;
+      letter-spacing: 0.01em;
+    }
+    .btn-hero-primary:hover { background: #85c058; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(114,168,74,0.25); }
+    .btn-hero-secondary {
+      padding: 14px 32px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9375rem; font-weight: 500;
+      color: var(--warm-white);
+      text-decoration: none;
+      transition: all 0.25s;
+      background: transparent;
+    }
+    .btn-hero-secondary:hover { border-color: rgba(114,168,74,0.4); background: rgba(114,168,74,0.05); }
+
+    /* ── PIXEL ART CANVAS ── */
+    .hero-visual {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pixel-canvas-wrap {
+      position: relative;
+      width: 100%; max-width: 560px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(114,168,74,0.05);
+    }
+    #pixelCanvas {
+      display: block;
+      width: 100%;
+      image-rendering: pixelated;
+    }
+    .canvas-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(7,20,15,0.6) 0%, transparent 40%);
+      pointer-events: none;
+    }
+    .canvas-badge {
+      position: absolute; bottom: 20px; left: 20px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      background: rgba(7,20,15,0.8);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.75rem;
+    }
+    .canvas-badge-dot { width: 8px; height: 8px; background: var(--leaf); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 32px 48px;
+      display: flex; justify-content: center; gap: 80px;
+    }
+    .stat { text-align: center; }
+    .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem; font-weight: 700;
+      color: var(--warm-white);
+      letter-spacing: -0.02em;
+    }
+    .stat-value span { color: var(--leaf); }
+    .stat-label { font-size: 0.8125rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── HOW IT WORKS ── */
+    section { padding: 96px 48px; }
+    .section-tag {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--leaf);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--warm-white);
+      margin-bottom: 64px;
+      max-width: 600px;
+    }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .step {
+      padding: 40px 32px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      position: relative;
+      transition: background 0.3s;
+    }
+    .step:first-child { border-radius: 12px 0 0 12px; }
+    .step:last-child  { border-radius: 0 12px 12px 0; }
+    .step:hover { background: rgba(18,60,42,0.55); }
+    .step-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3.5rem; font-weight: 700;
+      color: rgba(114,168,74,0.15);
+      line-height: 1; margin-bottom: 24px;
+      letter-spacing: -0.04em;
+    }
+    .step-icon { font-size: 1.75rem; margin-bottom: 16px; }
+    .step h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.125rem; font-weight: 600;
+      color: var(--warm-white); margin-bottom: 12px;
+    }
+    .step p { font-size: 0.9rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── FACTS TICKER ── */
+    .facts-ticker-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      background: var(--forest);
+      height: 110px;
+      display: flex;
+      align-items: center;
+    }
+    .facts-ticker-inner {
+      display: flex; gap: 48px; align-items: center;
+      animation: tickerScroll 40s linear infinite;
+      white-space: nowrap;
+      width: max-content;
+    }
+    @keyframes tickerScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .facts-ticker-inner:hover { animation-play-state: paused; }
+    .fact-item {
+      display: inline-flex; align-items: center; gap: 14px;
+      font-size: 1.05rem; color: var(--muted);
+      font-style: italic;
+    }
+    .fact-item strong { 
+      color: var(--warm-white); 
+      font-family: 'Space Grotesk', sans-serif; 
+      font-style: normal; 
+      letter-spacing: 0.02em;
+    }
+    .fact-icon { font-size: 1.5rem; font-style: normal; display: flex; align-items: center; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 32px 48px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8125rem; color: var(--muted);
+    }
+    .footer-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600; color: var(--warm-white);
+    }
+    .footer-logo span { color: var(--leaf); }
+
+    /* ── FLOATING PARTICLES ── */
+    .particle {
+      position: fixed;
+      width: 4px; height: 4px;
+      background: var(--leaf);
+      border-radius: 1px;
+      opacity: 0;
+      pointer-events: none;
+      animation: floatParticle linear infinite;
+    }
+    @keyframes floatParticle {
+      0%   { transform: translateY(100vh) translateX(0) rotate(0deg); opacity: 0; }
+      10%  { opacity: 0.4; }
+      90%  { opacity: 0.2; }
+      100% { transform: translateY(-10vh) translateX(40px) rotate(180deg); opacity: 0; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 0 24px; padding-top: 80px; gap: 40px; }
+      .hero-visual { order: -1; }
+      .stats-bar { padding: 24px; gap: 32px; flex-wrap: wrap; }
+      section { padding: 64px 24px; }
+      .steps { grid-template-columns: 1fr; }
+      .step { border-radius: 12px !important; }
+      footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px; }
+      .cta-section { padding: 64px 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating particles -->
+<div id="particles"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/static/landing.html" class="nav-logo">BLUE<span>CHAIN</span></a>
+  <ul class="nav-links">
+    <li><a href="#platform">Platform</a></li>
+    <li><a href="#how-it-works">How it Works</a></li>
+    <li><a href="/static/news.html">News</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="/static/login.html" class="btn-ghost">LOGIN</a>
+    <a href="/static/signup.html" class="btn-primary">GET STARTED</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="platform">
+  <div class="hero-content">
+    <div class="hero-eyebrow">Blue Carbon MRV · Sundarbans Prototype</div>
+    <h1>Satellite-verified<br><em>mangrove carbon.</em><br>On-chain.</h1>
+    <p class="hero-sub">BlueChain pulls live Sentinel-2 scenes, runs a Random Forest carbon estimator, and mints BCO2 credits on Ethereum — with a full explainability layer so auditors can see exactly why the model assigned a given credit score. Built for India’s Ministry of Earth Sciences blue carbon mandate.</p>
+    <div class="hero-actions">
+      <a href="/static/signup.html" class="btn-hero-primary">START ESTIMATING</a>
+      <a href="/static/markets.html" class="btn-hero-secondary">Carbon Markets →</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="pixel-canvas-wrap">
+      <canvas id="pixelCanvas" width="560" height="380"></canvas>
+      <div class="canvas-overlay"></div>
+      <div class="canvas-badge">
+        <div class="canvas-badge-dot"></div>
+        <span style="color:var(--muted)">Sentinel-2 · Sundarbans Delta, India</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-value">147<span>M ha</span></div>
+    <div class="stat-label">Global Mangrove Coverage</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">~6<span>bn</span></div>
+    <div class="stat-label">Tonnes CO₂ Stored in Mangroves</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">5<span>d</span></div>
+    <div class="stat-label">Sentinel-2 Revisit Cycle</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">&lt;3<span>min</span></div>
+    <div class="stat-label">Estimate to On-Chain Proof</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <div class="section-tag">How It Works</div>
+  <div class="section-title">From satellite scene to blockchain proof in under 3 minutes.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">🛠️</div>
+      <h3>Sentinel-2 Ingestion</h3>
+      <p>Drop a lat/lon pin on the Sundarbans delta. BlueChain queries the ESA STAC API for the latest Sentinel-2 L2A scene, validates cloud cover (&lt;30%), and extracts NDVI from Band 4 and Band 8 reflectance.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🌱</div>
+      <h3>Random Forest Estimation</h3>
+      <p>A 300-estimator Random Forest — trained on Sundarbans field survey data — predicts carbon density (tC/ha) from NDVI, latitude, and longitude. AGB and SOC stocks are split using Murdiyarso mangrove constants. GMW zone validation confirms the site is genuine mangrove.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">⛓️</div>
+      <h3>On-Chain Mint & Certificate</h3>
+      <p>The oracle wallet calls <code style="font-size:0.8em;color:var(--sky)">verifyAndIssueCredits()</code> on the BlueCarbonRegistry contract. BCO2 tokens are minted to your Aadhaar-linked wallet. An IPFS proof hash and a downloadable PDF certificate are generated instantly.</p>
+    </div>
+  </div>
+</section>
+
+<div class="facts-ticker-wrap">
+  <div class="facts-ticker-inner">
+    <div class="fact-item"><span class="fact-icon">🌊</span> <strong>Blue Carbon:</strong> Mangroves store up to 10x more carbon per hectare than terrestrial forests.</div>
+    <div class="fact-item"><span class="fact-icon">🌱</span> <strong>Soil Sequestration:</strong> Over 90% of a mangrove's carbon is stored in the soil, keeping it locked away for millennia.</div>
+    <div class="fact-item"><span class="fact-icon">🛡️</span> <strong>Coastal Defense:</strong> Mangrove forests reduce wave heights by up to 66%, protecting coastal communities from storm surges.</div>
+    <div class="fact-item"><span class="fact-icon">📈</span> <strong>Market Value:</strong> Blue carbon credits consistently trade at a premium due to high co-benefits for biodiversity.</div>
+    <div class="fact-item"><span class="fact-icon">🐟</span> <strong>Biodiversity:</strong> 80% of global fish catches depend on mangrove ecosystems directly or indirectly.</div>
+    <!-- Duplicate for seamless scrolling -->
+    <div class="fact-item"><span class="fact-icon">🌊</span> <strong>Blue Carbon:</strong> Mangroves store up to 10x more carbon per hectare than terrestrial forests.</div>
+    <div class="fact-item"><span class="fact-icon">🌱</span> <strong>Soil Sequestration:</strong> Over 90% of a mangrove's carbon is stored in the soil, keeping it locked away for millennia.</div>
+    <div class="fact-item"><span class="fact-icon">🛡️</span> <strong>Coastal Defense:</strong> Mangrove forests reduce wave heights by up to 66%, protecting coastal communities from storm surges.</div>
+    <div class="fact-item"><span class="fact-icon">📈</span> <strong>Market Value:</strong> Blue carbon credits consistently trade at a premium due to high co-benefits for biodiversity.</div>
+    <div class="fact-item"><span class="fact-icon">🐟</span> <strong>Biodiversity:</strong> 80% of global fish catches depend on mangrove ecosystems directly or indirectly.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">BLUE<span>CHAIN</span></div>
+  <div>Carbon intelligence. Verified impact.</div>
+  <div>© 2025 BlueChain</div>
+</footer>
+
+<script>
+  // ── Particle system ──────────────────────────────────────────────────────────
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random() * 100}vw;
+      width: ${Math.random() > 0.5 ? 3 : 4}px;
+      height: ${Math.random() > 0.5 ? 3 : 4}px;
+      animation-duration: ${12 + Math.random() * 20}s;
+      animation-delay: ${-Math.random() * 20}s;
+      opacity: ${0.1 + Math.random() * 0.3};
+    `;
+    container.appendChild(p);
+  }
+
+  // ── Pixel art canvas ─────────────────────────────────────────────────────────
+  (function drawPixelScene() {
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const PX = 4; // pixel size
+    const cols = Math.ceil(W / PX), rows = Math.ceil(H / PX);
+
+    // Palette
+    const C = {
+      sky1:    '#0a2233', sky2:    '#0d2d40', sky3:    '#123346',
+      star:    '#79B8C8', water1:  '#0e2535', water2:  '#122e44',
+      water3:  '#164056', ripple:  '#1d5070',
+      trunk:   '#071a10', trunk2:  '#0a2418', root:    '#081c12',
+      leaf1:   '#0B1F17', leaf2:   '#123C2A', leaf3:   '#1a5438',
+      leaf4:   '#4F7F3A', leaf5:   '#72A84A', leaf6:   '#5a8f40',
+      moss:    '#2d5c20', ground:  '#07140F', gnd2:    '#0a1e13',
+      fog1:    'rgba(18,51,70,0.15)', fog2: 'rgba(18,51,70,0.08)',
+    };
+
+    function px(gx, gy, col, alpha) {
+      ctx.globalAlpha = alpha ?? 1;
+      ctx.fillStyle = col;
+      ctx.fillRect(gx * PX, gy * PX, PX, PX);
+      ctx.globalAlpha = 1;
+    }
+
+    // Sky gradient
+    for (let r = 0; r < rows; r++) {
+      const t = r / rows;
+      const col = t < 0.35 ? C.sky1 : t < 0.55 ? C.sky2 : C.sky3;
+      for (let c = 0; c < cols; c++) px(c, r, col);
+    }
+
+    // Stars
+    const stars = [[3,1],[8,2],[14,1],[20,3],[28,1],[35,2],[40,1],[50,3],[58,1],[65,2],[70,1],[80,2],[90,3],[100,1],[108,2],[115,1],[120,3],[128,2],[4,5],[18,4],[30,6],[45,5],[60,4],[75,6],[90,5],[105,4],[119,6]];
+    stars.forEach(([sc,sr]) => { if(sc<cols && sr<rows) px(sc,sr,C.star,0.6+Math.random()*0.4); });
+
+    // Water zone (rows 62-95)
+    for (let r = 62; r < 95; r++) {
+      for (let c = 0; c < cols; c++) {
+        const t = (r-62)/33;
+        px(c, r, t < 0.4 ? C.water1 : t < 0.7 ? C.water2 : C.water3);
+      }
+    }
+    // Ripples
+    [[10,68],[25,72],[40,68],[55,74],[70,70],[85,76],[100,68],[115,73],[125,69]].forEach(([sc,sr]) => {
+      if(sc<cols-3 && sr<rows) { px(sc,sr,C.ripple,0.5); px(sc+1,sr,C.ripple,0.3); px(sc+2,sr,C.ripple,0.5); }
+    });
+    // Water shimmer
+    for(let i=0;i<20;i++){const c=Math.floor(Math.random()*cols),r=65+Math.floor(Math.random()*25);px(c,r,C.star,0.12);}
+
+    // Ground
+    for (let r = 88; r < rows; r++) {
+      for (let c = 0; c < cols; c++) px(c, r, r<92 ? C.gnd2 : C.ground);
+    }
+
+    // ── Draw mangrove tree ──────────────────────────────────────────────────────
+    function drawMangrove(cx, trunkTop, h, leafW, col1, col2, col3) {
+      // Trunk
+      for (let r = trunkTop; r < 88; r++) {
+        px(cx, r, C.trunk); if(r%3===0) px(cx, r, C.trunk2);
+      }
+      // Prop roots
+      const rootPairs = [[-3,6],[-2,4],[2,4],[3,6],[-4,8],[4,8]];
+      rootPairs.forEach(([dx,dy]) => {
+        for(let i=1;i<=dy;i++) px(cx+dx*(i/dy|0), trunkTop+h-dy+i, C.root, 0.7);
+      });
+      // Canopy layers
+      const layers = [
+        {dy:0, w:leafW,   c:col1},
+        {dy:2, w:leafW+2, c:col2},
+        {dy:4, w:leafW+4, c:col3},
+        {dy:6, w:leafW+2, c:col2},
+        {dy:8, w:leafW,   c:col1},
+      ];
+      layers.forEach(({dy, w, c}) => {
+        for(let dc=-w;dc<=w;dc++) {
+          if(Math.abs(dc)===w && Math.random()<0.4) continue;
+          px(cx+dc, trunkTop+dy, c);
+        }
+      });
+    }
+
+    // Left forest wall
+    drawMangrove(10,  20, 42, 7, C.leaf1, C.leaf2, C.leaf3);
+    drawMangrove(20,  26, 36, 6, C.leaf2, C.leaf3, C.leaf4);
+    drawMangrove(4,   30, 32, 5, C.leaf1, C.leaf2, C.leaf3);
+    drawMangrove(28,  32, 28, 5, C.leaf2, C.leaf3, C.leaf4);
+
+    // Right forest wall
+    drawMangrove(cols-11, 18, 44, 8, C.leaf1, C.leaf2, C.leaf3);
+    drawMangrove(cols-20, 24, 38, 7, C.leaf2, C.leaf3, C.leaf4);
+    drawMangrove(cols-5,  28, 34, 5, C.leaf1, C.leaf2, C.leaf3);
+    drawMangrove(cols-28, 30, 30, 6, C.leaf2, C.leaf3, C.leaf4);
+
+    // Center background trees
+    drawMangrove(cols/2|0,    36, 24, 4, C.leaf1, C.leaf2, C.leaf3);
+    drawMangrove((cols/2|0)+8, 40, 20, 3, C.leaf2, C.leaf3, C.leaf4);
+    drawMangrove((cols/2|0)-8, 38, 22, 4, C.leaf1, C.leaf2, C.leaf3);
+
+    // Foreground detail leaves (leaf5 highlights)
+    [[6,22],[12,30],[cols-8,20],[cols-14,28],[cols/2|0,34]].forEach(([lc,lr]) => {
+      if(lc>=0 && lc<cols && lr>=0 && lr<rows) px(lc,lr,C.leaf5,0.7);
+    });
+
+    // Floating leaves
+    const floatLeaves = [[18,55],[40,48],[60,52],[80,46],[100,54],[120,50]];
+    floatLeaves.forEach(([lc,lr]) => { if(lc<cols && lr<rows) px(lc,lr,C.leaf4,0.6); });
+
+    // Atmospheric fog overlay
+    ctx.save();
+    const fogGrad = ctx.createLinearGradient(0,H*0.55,0,H*0.75);
+    fogGrad.addColorStop(0,'rgba(9,30,22,0)');
+    fogGrad.addColorStop(1,'rgba(9,30,22,0.45)');
+    ctx.fillStyle = fogGrad; ctx.fillRect(0,H*0.55,W,H*0.45);
+    ctx.restore();
+
+    // Glow in center-top
+    ctx.save();
+    const glow = ctx.createRadialGradient(W/2,H*0.15,0,W/2,H*0.15,W*0.35);
+    glow.addColorStop(0,'rgba(121,184,200,0.06)');
+    glow.addColorStop(1,'rgba(121,184,200,0)');
+    ctx.fillStyle = glow; ctx.fillRect(0,0,W,H*0.5);
+    ctx.restore();
+  })();
+
+  // ── Redirect if already logged in ───────────────────────────────────────────
+  (function() {
+    try {
+      const user = sessionStorage.getItem('bluechain_user');
+      if (user) window.location.href = '/';
+    } catch(e) {}
+  })();
+</script>
+</body>
+</html>

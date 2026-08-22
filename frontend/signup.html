@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — BlueChain</title>
+  <meta name="description" content="Create your BlueChain carbon workspace account.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --deep-forest: #07140F;
+      --forest: #0B1F17;
+      --mangrove: #123C2A;
+      --leaf: #72A84A;
+      --sky: #79B8C8;
+      --warm-white: #F3F1E8;
+      --muted: #8DA898;
+      --border: rgba(114, 168, 74, 0.15);
+      --err: #e05454;
+      --form-bg: rgba(18, 60, 42, 0.25);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--deep-forest);
+      color: var(--warm-white);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+    }
+
+    /* LEFT */
+    .panel-left {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px;
+      background: var(--forest);
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: var(--warm-white);
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo span {
+      color: var(--leaf);
+    }
+
+    .left-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .left-tagline {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.875rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--warm-white);
+      margin-bottom: 20px;
+    }
+
+    .left-tagline em {
+      font-style: normal;
+      color: var(--leaf);
+    }
+
+    .left-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 320px;
+      margin-bottom: 32px;
+    }
+
+    .role-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .role-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .role-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--leaf);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .left-footer {
+      position: relative;
+      z-index: 2;
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .left-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* RIGHT */
+    .panel-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 48px;
+      overflow-y: auto;
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(121, 184, 200, 0.08);
+      border: 1px solid rgba(121, 184, 200, 0.2);
+      color: var(--sky);
+      margin-bottom: 24px;
+    }
+
+    .demo-badge.hidden {
+      display: none;
+    }
+
+    .form-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .form-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-grid .full {
+      grid-column: 1/-1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.01em;
+    }
+
+    input,
+    select {
+      background: var(--form-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 0.9rem;
+      color: var(--warm-white);
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(114, 168, 74, 0.5);
+      box-shadow: 0 0 0 3px rgba(114, 168, 74, 0.08);
+    }
+
+    input::placeholder {
+      color: rgba(141, 168, 152, 0.45);
+    }
+
+    select option {
+      background: var(--forest);
+    }
+
+    .btn-submit {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px 24px;
+      background: var(--leaf);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--deep-forest);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-submit:hover {
+      background: #85c058;
+    }
+
+    .btn-submit:disabled {
+      background: rgba(114, 168, 74, 0.3);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .form-footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .form-footer a {
+      color: var(--leaf);
+      text-decoration: none;
+    }
+
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .error-box {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(224, 84, 84, 0.1);
+      border: 1px solid rgba(224, 84, 84, 0.3);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: var(--err);
+    }
+
+    .success-box {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: rgba(114, 168, 74, 0.1);
+      border: 1px solid rgba(114, 168, 74, 0.3);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: var(--leaf);
+    }
+
+    .tos {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .tos a {
+      color: var(--muted);
+      text-decoration: underline;
+    }
+
+    .pw-strength {
+      height: 3px;
+      border-radius: 2px;
+      margin-top: 6px;
+      transition: all 0.3s;
+      background: var(--border);
+    }
+
+    @media (max-width:768px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-left {
+        display: none;
+      }
+
+      .panel-right {
+        padding: 40px 24px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="panel-left">
+    <canvas class="left-bg" id="bgCanvas"></canvas>
+    <a href="/static/landing.html" class="logo">BLUE<span>CHAIN</span></a>
+    <div class="left-content">
+      <div class="left-tagline">Join the verified<br><em>carbon ecosystem.</em></div>
+      <p class="left-sub">BlueChain is built for professionals managing real-world carbon projects. Create your
+        workspace in minutes.</p>
+      <ul class="role-list">
+        <li>
+          <div class="role-dot"></div>Organisation Admins
+        </li>
+        <li>
+          <div class="role-dot"></div>Carbon Managers
+        </li>
+        <li>
+          <div class="role-dot"></div>Project Developers
+        </li>
+        <li>
+          <div class="role-dot"></div>Verifiers & Auditors
+        </li>
+        <li>
+          <div class="role-dot"></div>Consultants & Viewers
+        </li>
+      </ul>
+    </div>
+    <div class="left-footer">Carbon intelligence. Verified impact.</div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+    <div class="form-container">
+      <h1 class="form-title">Create account.</h1>
+      <p class="form-sub">Set up your organisation's carbon workspace.</p>
+
+      <form id="signupForm" novalidate>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Jane Smith" required autocomplete="name">
+          </div>
+          <div class="form-group full">
+            <label for="workEmail">Work Email</label>
+            <input type="email" id="workEmail" name="workEmail" placeholder="jane@organisation.com" required
+              autocomplete="email">
+          </div>
+          <div class="form-group full">
+            <label for="organisation">Organisation</label>
+            <input type="text" id="organisation" name="organisation" placeholder="Carbon Dynamics Ltd." required>
+          </div>
+          <div class="form-group full">
+            <label for="role">Your Role</label>
+            <select id="role" name="role" required>
+              <option value="" disabled selected>Select your role…</option>
+              <option value="Organization Admin">Organisation Admin</option>
+              <option value="Carbon Manager">Carbon Manager</option>
+              <option value="Project Manager">Project Manager</option>
+              <option value="Verifier / Auditor">Verifier / Auditor</option>
+              <option value="Viewer">Viewer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Min. 8 characters" required
+              autocomplete="new-password">
+            <div class="pw-strength" id="pwStrength"></div>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repeat password" required
+              autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">CREATE ACCOUNT</button>
+        <div class="error-box" id="errorBox"></div>
+        <div class="success-box" id="successBox"></div>
+      </form>
+
+      <div class="form-footer">Already have an account? <a href="/static/login.html">Sign in →</a></div>
+      <div class="tos">By creating an account you agree to BlueChain's <a href="#">Terms of Service</a> and <a
+          href="#">Privacy Policy</a>.</div>
+    </div>
+  </div>
+
+  <script>
+    window.__FIREBASE_CONFIG__ = window.__FIREBASE_CONFIG__ || {
+      apiKey: "AIzaSyDQqBtuQJ1Ify_mEh7e_1GhMnvl2zLOg_c",
+      authDomain: "bluechain-d98ca.firebaseapp.com",
+      projectId: "bluechain-d98ca",
+      storageBucket: "bluechain-d98ca.firebasestorage.app",
+      messagingSenderId: "485088876242",
+      appId: "1:485088876242:web:5851d928d6030af798ff0b",
+      measurementId: "G-ZPSLBEK9NG"
+    };
+  </script>
+  <script src="/static/auth.js"></script>
+  <script>
+    if (!BlueChainAuth.isDemoMode) document.getElementById('demoBadge').classList.add('hidden');
+
+    // Password strength indicator
+    document.getElementById('password').addEventListener('input', function () {
+      const val = this.value;
+      const bar = document.getElementById('pwStrength');
+      if (!val) { bar.style.width = '0'; bar.style.background = ''; return; }
+      const strength = [val.length >= 8, /[A-Z]/.test(val), /[0-9]/.test(val), /[^A-Za-z0-9]/.test(val)].filter(Boolean).length;
+      const colors = ['', '#e05454', '#d4813a', '#72A84A'];
+      const widths = ['0%', '33%', '66%', '100%'];
+      bar.style.width = widths[strength] || '0%';
+      bar.style.background = colors[strength] || '';
+    });
+
+    // Form submit
+    document.getElementById('signupForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const errBox = document.getElementById('errorBox');
+      const okBox = document.getElementById('successBox');
+      errBox.style.display = 'none';
+      okBox.style.display = 'none';
+
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('workEmail').value.trim();
+      const org = document.getElementById('organisation').value.trim();
+      const role = document.getElementById('role').value;
+      const pw = document.getElementById('password').value;
+      const pwConf = document.getElementById('confirmPassword').value;
+
+      if (!name || !email || !org || !role || !pw) {
+        errBox.textContent = 'Please fill in all fields.'; errBox.style.display = 'block'; return;
+      }
+      if (pw.length < 8) {
+        errBox.textContent = 'Password must be at least 8 characters.'; errBox.style.display = 'block'; return;
+      }
+      if (pw !== pwConf) {
+        errBox.textContent = 'Passwords do not match.'; errBox.style.display = 'block'; return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Creating account…';
+      try {
+        await BlueChainAuth.signup({ name, email, org, role, password: pw });
+        window.location.href = '/';
+      } catch (ex) {
+        errBox.textContent = ex.message; errBox.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'CREATE ACCOUNT';
+      }
+    });
+
+    // Redirect if already logged in
+    (function () {
+      try { if (BlueChainAuth.getCurrentUser()) window.location.href = '/'; } catch (e) { }
+    })();
+
+    // Background canvas
+    (function () {
+      const canvas = document.getElementById('bgCanvas');
+      const p = canvas.parentElement;
+      canvas.width = p.offsetWidth || 600; canvas.height = p.offsetHeight || 900;
+      const ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height, PX = 8;
+      const cols = Math.ceil(W / PX), rows = Math.ceil(H / PX);
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        ctx.fillStyle = '#0B1F17'; ctx.fillRect(c * PX, r * PX, PX, PX);
+      }
+      for (let r = 0; r < rows; r += 5) for (let c = 0; c < cols; c += 5) {
+        ctx.globalAlpha = 0.12; ctx.fillStyle = '#72A84A'; ctx.fillRect(c * PX, r * PX, 2, 2); ctx.globalAlpha = 1;
+      }
+    })();
+  </script>
+</body>
+
+</html>

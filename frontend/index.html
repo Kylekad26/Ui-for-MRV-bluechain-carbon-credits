@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sundarbans Blue Carbon MRV | Sepolia</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151f32',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Auth check script (runs immediately to prevent flash of content) -->
+    <script src="/static/auth.js"></script>
+    <script>
+        const currentUser = BlueChainAuth.getCurrentUser();
+        if (!currentUser) {
+            window.location.href = '/static/landing.html';
+        }
+    </script>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <!-- PDF + QR libraries (CDN — no install required) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- BlueChain Certificate Generator -->
+    <script src="/static/cert.js"></script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        #map { height: 400px; width: 100%; min-height: 380px; border-radius: 0.5rem; z-index: 10; }
+        .monospace { font-family: 'Courier New', Courier, monospace; }
+        
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-[#07140F] text-slate-100 min-h-screen" style="font-family: 'Inter', system-ui, sans-serif;">
+
+<!-- BlueChain App Shell Nav -->
+<nav class="flex items-center justify-between px-6 py-4 bg-[#0B1F17] border-b border-[#123C2A] sticky top-0 z-50 shadow-sm">
+  <div class="flex items-center space-x-8">
+    <a href="/" class="text-xl font-bold tracking-tight text-slate-100" style="font-family: 'Space Grotesk', sans-serif;">BLUE<span class="text-[#72A84A]">CHAIN</span></a>
+    <div class="hidden md:flex space-x-6">
+      <a href="/static/model-intelligence.html" class="text-sm font-medium text-[#8DA898] hover:text-white transition-colors">Model Intelligence</a>
+      <a href="#" class="text-sm font-medium text-[#72A84A] border-b-2 border-[#72A84A] pb-4 -mb-4.5" style="margin-bottom: -17px;">MRV & Registry</a>
+      <a href="/static/identity.html" class="text-sm font-medium text-[#8DA898] hover:text-white transition-colors" id="nav-identity-link">Identity</a>
+    </div>
+  </div>
+  <div class="flex items-center space-x-4">
+    <!-- Web3 Status Indicator -->
+    <div id="web3-status" class="hidden md:flex items-center gap-2 mr-4 px-3 py-1.5 bg-[#123C2A]/20 border border-[#4F7F3A]/20 rounded-full cursor-help" title="Checking blockchain node connection...">
+      <span id="web3-dot" class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
+      <span id="web3-label" class="text-[10px] font-bold tracking-wide uppercase text-slate-400">Connecting...</span>
+    </div>
+    <div class="hidden md:block text-right border-l border-[#123C2A] pl-4">
+      <div id="user-name" class="text-sm font-medium text-slate-200">Loading...</div>
+      <div id="user-org" class="text-xs text-[#8DA898]"></div>
+    </div>
+    <button onclick="BlueChainAuth.logout()" class="px-3 py-1.5 text-xs font-medium bg-[#123C2A] hover:bg-[#1a5438] border border-[#4F7F3A]/30 rounded text-slate-200 transition-colors">Sign Out</button>
+  </div>
+</nav>
+
+<div class="p-4 md:p-8">
+  <div class="bg-[#173B52]/30 border border-[#173B52] text-[#79B8C8] text-xs text-center py-2 px-4 mb-6 rounded flex items-center justify-center gap-2 max-w-7xl mx-auto">
+    <span>🌐</span> Running on Ethereum Sepolia public testnet. All transactions are real and independently verifiable on Etherscan.
+  </div>
+
+  <div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-center bg-[#0B1F17] p-6 rounded-xl border border-[#123C2A] shadow-lg">
+        <div>
+            <h1 class="text-2xl font-bold text-white mb-1" style="font-family: 'Space Grotesk', sans-serif;">
+                Project Verification & Minting
+            </h1>
+            <p class="text-[#8DA898] text-sm">Sundarbans Mangrove Carbon Credits · Satellite ML · Blockchain (Sepolia)</p>
+        </div>
+        <div id="health-status" class="mt-4 md:mt-0 flex items-center space-x-2 text-sm font-medium px-4 py-2 rounded-full bg-[#07140F] border border-[#123C2A]">
+            <span class="flex h-3 w-3 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#72A84A] opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-[#72A84A]"></span>
+            </span>
+            <span id="health-text" class="text-[#8DA898]">Connecting to Node...</span>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Map Panel -->
+        <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-5 shadow-lg flex flex-col space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-white" style="font-family: 'Space Grotesk', sans-serif;">📍 Sundarbans Region — Click to Select Site</h2>
+            </div>
+            
+            <div id="map" class="w-full border border-[#123C2A]"></div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <button onclick="flyToZone('SUND-CORE', 21.9497, 89.1833)" class="text-xs bg-[#123C2A] hover:bg-[#1a5438] text-white py-2 px-3 rounded border border-[#4F7F3A]/30 transition-colors">🌿 Core Zone</button>
+                <button onclick="flyToZone('SUND-WEST', 21.8, 88.6)" class="text-xs bg-[#123C2A] hover:bg-[#1a5438] text-white py-2 px-3 rounded border border-[#4F7F3A]/30 transition-colors">🌿 West Delta</button>
+                <button onclick="flyToZone('SUND-EAST', 22.1, 89.5)" class="text-xs bg-[#123C2A] hover:bg-[#1a5438] text-white py-2 px-3 rounded border border-[#4F7F3A]/30 transition-colors">🌿 East Delta</button>
+                <button onclick="flyToZone('SUND-NORTH', 22.5, 88.9)" class="text-xs bg-[#123C2A] hover:bg-[#1a5438] text-white py-2 px-3 rounded border border-[#4F7F3A]/30 transition-colors">🌿 North Zone</button>
+            </div>
+            <p class="text-xs text-[#8DA898] italic">Model trained on 76 Sundarbans field plots (2023). Click anywhere in the delta to set coordinates.</p>
+        </div>
+
+        <!-- ML & Minting Panel -->
+        <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-5 shadow-lg flex flex-col space-y-6">
+            
+            <!-- Step 1: Estimation -->
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-4" style="font-family: 'Space Grotesk', sans-serif;">1. STAC Ingestion & ML Inference</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-1">Site ID</label>
+                        <input type="text" id="est-site-id" value="SUND-LIVE-001" class="w-full bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#72A84A]/50 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-1">Area (Hectares)</label>
+                        <input type="number" id="est-area" value="100" class="w-full bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#72A84A]/50 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-1">Latitude</label>
+                        <input type="number" step="any" id="est-lat" value="21.9497" class="w-full bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#72A84A]/50 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-1">Longitude</label>
+                        <input type="number" step="any" id="est-lon" value="89.1833" class="w-full bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#72A84A]/50 transition-colors">
+                    </div>
+                </div>
+                <button id="btn-estimate" onclick="runEstimate()" class="w-full bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2 px-4 rounded shadow transition-colors">
+                    Query STAC & Run ML Model
+                </button>
+
+                <!-- Fraud Flag Banner -->
+                <div id="fraud-banner" class="hidden mt-4 bg-[#4a0b0b]/80 border-l-4 border-l-[#ef4444] border-y border-r border-[#ef4444]/30 rounded text-[#f87171] p-4 shadow-lg"></div>
+
+                <!-- Estimate Results Box -->
+                <div id="estimate-result" class="hidden mt-4 bg-[#07140F] border border-[#123C2A] rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-3 border-b border-[#123C2A] pb-2">
+                        <span class="text-xs font-bold text-[#72A84A] tracking-wider uppercase">Live ESA Sentinel-2 STAC Ingestion</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-y-2 text-sm text-[#8DA898] mb-4 items-center">
+                        <span class="text-[#8DA898] flex items-center gap-1">Scene ID <span class="px-1 py-0.5 bg-[#173B52]/30 text-[#79B8C8] text-[10px] rounded border border-[#173B52]" title="Real satellite metadata">REAL</span>:</span>
+                        <span id="res-scene" class="monospace text-right text-white"></span>
+                        <span class="text-[#8DA898] flex items-center gap-1">Cloud Cover <span class="px-1 py-0.5 bg-[#173B52]/30 text-[#79B8C8] text-[10px] rounded border border-[#173B52]" title="Real satellite metadata">REAL</span>:</span>
+                        <span id="res-clouds" class="monospace text-right text-white"></span>
+                        <span class="text-[#8DA898] flex items-center gap-1">Dynamic NDVI <span id="res-ndvi-badge" class="px-1 py-0.5 bg-[#123C2A] text-slate-300 text-[10px] rounded border border-[#4F7F3A]/30" title="NDVI source">MODELLED</span>:</span>
+                        <span id="res-ndvi" class="monospace text-right font-semibold text-[#72A84A]"></span>
+                    </div>
+                    <div class="border-t border-[#123C2A] pt-3">
+                        <p class="text-xs font-bold text-[#79B8C8] tracking-wider uppercase mb-2 flex items-center">Carbon Estimation — Sundarbans RF Model <span class="px-1 py-0.5 bg-purple-900/30 text-purple-300 text-[10px] rounded border border-purple-800 normal-case font-normal ml-2" title="RandomForestRegressor trained on 76 Sundarbans ground-truth plots (2023). Features: NDVI, lat, lon.">RF MODEL</span></p>
+                        <div class="grid grid-cols-2 gap-y-2 text-sm text-[#8DA898] items-center">
+                            <span class="text-[#8DA898]">Total Density:</span>
+                            <span id="res-density" class="monospace text-right text-white"></span>
+                            <span class="text-[#8DA898]">Total Carbon Stock:</span>
+                            <span id="res-total-stock" class="monospace text-right text-white"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- New Carbon Composition Section -->
+                    <div class="border-t border-[#123C2A] pt-3 mt-3">
+                        <p class="text-xs font-bold text-[#8DA898] tracking-wider uppercase mb-3">Carbon Composition (per hectare)</p>
+                        <div class="flex h-6 w-full rounded overflow-hidden text-[11px] font-bold text-[#07140F] text-center leading-6 mb-2">
+                            <div class="bg-[#72A84A] w-[28%]" id="bar-agb" title="Above-Ground Biomass (28%)"></div>
+                            <div class="bg-[#8DA898] w-[72%]" id="bar-soc" title="Soil Organic Carbon (72%)"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-[#8DA898]">
+                            <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#72A84A]"></span> AGB: <span id="res-agb-density" class="text-white"></span> <span class="cursor-help underline decoration-dotted" title="tC = metric tons of carbon. tCO2e = tC × 3.67, the CO2-equivalent used for credit issuance.">tC/ha</span></div>
+                            <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#8DA898]"></span> SOC: <span id="res-soc-density" class="text-white"></span> <span class="cursor-help underline decoration-dotted" title="tC = metric tons of carbon. tCO2e = tC × 3.67, the CO2-equivalent used for credit issuance.">tC/ha</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-[#173B52]/30 border border-[#173B52] rounded flex justify-between items-center">
+                        <span class="text-sm font-semibold text-[#79B8C8] flex items-center gap-1">Total Mintable Credits: <span class="cursor-help text-xs bg-[#173B52] rounded-full w-4 h-4 inline-flex items-center justify-center text-white" title="tC = metric tons of carbon. tCO2e = tC × 3.67, the CO2-equivalent used for credit issuance.">?</span></span>
+                        <div>
+                            <span id="res-credits" class="text-xl font-bold text-[#79B8C8]">0</span> <span class="text-[#79B8C8] text-sm">tCO2e</span>
+                        </div>
+                    </div>
+                    <!-- GMW Validation Badge -->
+                    <div id="gmw-badge" class="hidden mt-3"></div>
+                </div>
+                <div id="estimate-error" class="hidden mt-4 p-3 bg-[#e05454]/10 border border-[#e05454]/30 text-[#e05454] text-sm rounded"></div>
+                <div id="typology-override-notice" class="hidden mt-2 text-yellow-400 text-xs italic"></div>
+            </div>
+
+            <!-- Credit Quality Score Card -->
+            <div id="score-card" class="hidden mt-4 bg-[#07140F] border border-[#123C2A] rounded-lg p-4">
+                <h3 class="text-white font-semibold mb-3">🏅 Credit Quality Score</h3>
+                <div class="flex items-center gap-4 mb-3">
+                    <div id="score-grade" class="text-4xl font-bold"></div>
+                    <div>
+                        <div id="score-total" class="text-2xl text-white"></div>
+                        <div class="text-[#8DA898] text-xs">out of 100</div>
+                    </div>
+                </div>
+                <div class="w-full bg-[#123C2A] rounded h-3 mb-3">
+                    <div id="score-bar" class="h-3 rounded transition-all duration-500" style="width:0%"></div>
+                </div>
+                <div id="score-market" class="text-sm text-[#F3F1E8] mb-3"></div>
+                <table class="w-full text-xs text-[#8DA898]">
+                    <thead>
+                        <tr>
+                            <th class="text-left py-1">Component</th>
+                            <th class="text-right py-1">Score</th>
+                            <th class="text-right py-1">Max</th>
+                        </tr>
+                    </thead>
+                    <tbody id="score-breakdown"></tbody>
+                </table>
+            </div>
+
+            <!-- Model Info Note -->
+            <div id="model-info-note" class="hidden mt-4 bg-[#123C2A]/20 border border-[#123C2A] rounded p-3 text-xs text-[#8DA898]">
+                <span class="text-[#72A84A] font-semibold">🌱 Model:</span> RandomForestRegressor · Features: NDVI, lat, lon · 76 Sundarbans ground-truth plots (2023) · AGB 28% / SOC 72% split · 1 tC = 3.67 tCO2e
+            </div>
+
+            <hr class="border-[#123C2A]">
+
+            <!-- Step 2: Minting -->
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-4" style="font-family: 'Space Grotesk', sans-serif;">2. Blockchain Verification & Minting</h2>
+                <div class="grid grid-cols-1 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-1">Predicted Credits (tCO2e)</label>
+                        <input type="number" id="mint-credits" readonly placeholder="Run estimate first" class="w-full bg-[#07140F] border border-[#123C2A] rounded px-3 py-2 text-sm text-[#8DA898] cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#8DA898] mb-1">Project Owner Wallet Address</label>
+                        <input type="text" id="mint-owner" value="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" class="w-full bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#72A84A]/50 monospace">
+                        <p id="identity-wallet-hint" class="hidden text-xs mt-1 text-[#f5a13d]">No identity linked. <a href="/static/identity.html" class="underline text-[#79B8C8]">Link your Aadhaar wallet →</a></p>
+                        <p id="identity-wallet-linked" class="hidden text-xs mt-1 text-[#72A84A]">✓ Auto-filled from your Aadhaar-linked identity</p>
+                    </div>
+                </div>
+                <button id="btn-mint" onclick="verifyAndMint()" disabled class="w-full bg-[#72A84A] hover:bg-[#85c058] disabled:bg-[#123C2A] disabled:text-[#8DA898] disabled:border-[#4F7F3A]/30 border border-[#72A84A] text-[#07140F] font-semibold py-2 px-4 rounded shadow transition-colors relative group">
+                    <span id="btn-mint-text">Sign & Broadcast TX</span>
+                    <!-- Warning overlay if Web3 is offline -->
+                    <div id="mint-offline-warn" class="hidden absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#4a0b0b] text-[#f87171] border border-[#ef4444] text-[10px] px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                        Chain Offline — Will broadcast mock transaction
+                    </div>
+                </button>
+
+                <!-- Mint Results Box -->
+                <div id="mint-result" class="hidden mt-4 bg-[#07140F] border border-[#123C2A] rounded-lg p-4">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-[#72A84A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span class="text-sm font-bold text-[#72A84A]">Transaction Confirmed</span>
+                    </div>
+                </div>
+                <div id="mint-error" class="hidden mt-4 p-3 bg-[#e05454]/10 border border-[#e05454]/30 text-[#e05454] text-sm rounded"></div>
+
+                <!-- Certificate Ready Panel (shown after successful mint) -->
+                <div id="cert-panel" class="hidden mt-4 bg-[#07140F] border border-[#72A84A]/40 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-[#72A84A] text-lg">📄</span>
+                        <span class="text-sm font-bold text-[#72A84A]" style="font-family:'Space Grotesk',sans-serif;">CERTIFICATE READY</span>
+                    </div>
+                    <p class="text-[#8DA898] text-xs mb-4">Your BlueChain carbon certificate has been generated from the verified on-chain data.</p>
+                    
+                    <!-- On-Chain Receipt Sub-card -->
+                    <div class="bg-[#0B1F17] rounded border border-[#123C2A] p-3 mb-4 text-xs text-[#8DA898]">
+                        <div class="font-bold text-[#79B8C8] mb-2 uppercase tracking-wider text-[10px]">On-Chain Receipt</div>
+                        <div class="grid grid-cols-1 gap-2">
+                            <div class="flex justify-between items-center">
+                                <span>TX Hash:</span>
+                                <div class="flex items-center gap-2">
+                                    <a id="cert-tx-hash" href="#" target="_blank" class="monospace text-[#72A84A] hover:underline truncate max-w-[150px]"></a>
+                                    <button onclick="copyToClipboard(document.getElementById('cert-tx-hash').innerText)" class="text-[#8DA898] hover:text-white" title="Copy TX Hash">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>IPFS Proof:</span>
+                                <div class="flex items-center gap-2">
+                                    <a id="cert-ipfs" href="#" target="_blank" class="monospace text-[#79B8C8] hover:underline truncate max-w-[150px]"></a>
+                                    <button onclick="copyToClipboard(document.getElementById('cert-ipfs').innerText)" class="text-[#8DA898] hover:text-white" title="Copy IPFS Hash">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center mt-1 pt-2 border-t border-[#123C2A]">
+                                <span id="cert-block" class="text-[#8DA898]">Block: </span>
+                                <span id="cert-gas" class="text-[#8DA898]">Gas used: </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="downloadCert()" id="btn-dl-cert"
+                            class="flex-1 bg-[#72A84A] hover:bg-[#85c058] text-[#07140F] font-semibold py-2 px-3 rounded text-sm shadow transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Download PDF
+                        </button>
+                        <button onclick="viewVerifyPage()" id="btn-view-cert"
+                            class="flex-1 bg-[#123C2A] hover:bg-[#1a5438] text-white font-medium py-2 px-3 rounded text-sm border border-[#4F7F3A]/30 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            View on Chain
+                        </button>
+                    </div>
+                    <div id="cert-gen-status" class="hidden mt-3 text-xs text-[#8DA898] text-center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registry Table -->
+    <div class="bg-[#0B1F17] rounded-xl border border-[#123C2A] p-5 shadow-lg overflow-hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-white" style="font-family: 'Space Grotesk', sans-serif;">Immutable Project Registry</h2>
+            <button onclick="loadRegistry()" class="text-xs bg-[#123C2A] hover:bg-[#1a5438] text-white py-1.5 px-3 rounded border border-[#4F7F3A]/30 transition-colors flex items-center">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Refresh
+            </button>
+        </div>
+        
+            <div class="flex flex-col sm:flex-row gap-3 mb-4 items-center bg-[#07140F] p-3 rounded-lg border border-[#123C2A]">
+                <div class="text-xs font-bold text-[#79B8C8] uppercase tracking-wider mr-2">Filters</div>
+                
+                <select id="filter-status" onchange="renderRegistry()" class="bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#72A84A]/50">
+                    <option value="ALL">All Status</option>
+                    <option value="VERIFIED">Verified</option>
+                    <option value="PENDING">Pending</option>
+                </select>
+                
+                <div class="relative group">
+                    <select id="filter-grade" disabled class="bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-2 py-1 text-xs text-white opacity-50 cursor-not-allowed">
+                        <option value="ALL">All Grades (Backend Gap)</option>
+                    </select>
+                    <div class="absolute bottom-full mb-1 hidden group-hover:block w-48 p-2 bg-[#173B52] text-xs text-white rounded shadow-lg z-10 border border-[#4F7F3A]/30">
+                        Backend API gap: /api/registry/projects currently does not return credit_score/grade. Filter disabled.
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="date" id="filter-date-start" onchange="renderRegistry()" class="bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#72A84A]/50" title="Start Date">
+                    <span class="text-[#8DA898] text-xs">to</span>
+                    <input type="date" id="filter-date-end" onchange="renderRegistry()" class="bg-[#123C2A]/25 border border-[rgba(114,168,74,0.15)] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#72A84A]/50" title="End Date">
+                </div>
+            </div>
+
+            <table class="w-full text-left text-sm text-[#F3F1E8] monospace">
+                <thead class="text-xs text-[#8DA898] uppercase bg-[#07140F] border-b border-[#123C2A]">
+                    <tr>
+                        <th scope="col" class="px-4 py-3">Site ID</th>
+                        <th scope="col" class="px-4 py-3">Owner</th>
+                        <th scope="col" class="px-4 py-3">Area (Ha)</th>
+                        <th scope="col" class="px-4 py-3">Carbon Stock (tCO2e)</th>
+                        <th scope="col" class="px-4 py-3 text-[#72A84A] cursor-pointer hover:text-white transition-colors group" onclick="toggleRegistrySort()">
+                            <div class="flex items-center gap-1">
+                                BCO2 Minted
+                                <span id="sort-icon-minted" class="text-[10px] opacity-50 group-hover:opacity-100">▼</span>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-4 py-3">Status</th>
+                        <th scope="col" class="px-4 py-3">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="registry-body" class="divide-y divide-[#123C2A]">
+                    <tr><td colspan="7" class="px-4 py-8 text-center text-[#8DA898]">Loading on-chain data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.location.origin;
+
+    // --- LEAFLET MAP SETUP ---
+    const map = L.map('map').setView([21.9497, 89.1833], 9);
+    
+    // OpenStreetMap Base Layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18,
+        crossOrigin: true
+    }).addTo(map);
+
+    // Add a bounding box outline for the Sundarbans region
+    L.rectangle([[21.4, 88.0], [22.9, 89.9]], {
+        color: '#34d399', weight: 1.5, fill: true,
+        fillColor: '#34d399', fillOpacity: 0.05,
+        dashArray: '6 4'
+    }).addTo(map).bindTooltip('Sundarbans Delta (Model Training Region)', {permanent: false, direction: 'top'});
+
+    let currentMarker = L.marker([21.9497, 89.1833]).addTo(map);
+
+    function updateMarkerAndInputs(lat, lng) {
+        document.getElementById('est-lat').value = lat.toFixed(4);
+        document.getElementById('est-lon').value = lng.toFixed(4);
+        currentMarker.setLatLng([lat, lng]);
+    }
+
+    map.on('click', function(e) {
+        updateMarkerAndInputs(e.latlng.lat, e.latlng.lng);
+    });
+
+    function flyToZone(prefix, lat, lng) {
+        map.flyTo([lat, lng], 11, { duration: 1.5 });
+        updateMarkerAndInputs(lat, lng);
+        document.getElementById('est-site-id').value = `${prefix}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+    }
+
+    // --- API LOGIC ---
+
+    // Health Check
+    fetch(`${API_BASE}/api/health`)
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById('health-text');
+            if (data.status === 'healthy') {
+                el.innerText = `Connected (Chain: ${data.chain_id})`;
+            } else {
+                el.innerText = `System Offline`;
+                el.parentElement.classList.replace('bg-emerald-500', 'bg-red-500');
+            }
+        }).catch(err => {
+            const el = document.getElementById('health-text');
+            el.innerText = `API Unreachable`;
+            el.parentElement.querySelector('.bg-emerald-500').classList.replace('bg-emerald-500', 'bg-red-500');
+            el.parentElement.querySelector('.animate-ping').classList.add('hidden');
+        });
+
+    let currentEstimate = null;
+
+    async function runEstimate() {
+        const btn = document.getElementById('btn-estimate');
+        const resBox = document.getElementById('estimate-result');
+        const errBox = document.getElementById('estimate-error');
+        
+        btn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Querying Satellite & Running ML Model...';
+        btn.disabled = true;
+        resBox.classList.add('hidden');
+        errBox.classList.add('hidden');
+        document.getElementById('btn-mint').disabled = true;
+
+        const payload = {
+            site_id: document.getElementById('est-site-id').value,
+            latitude: parseFloat(document.getElementById('est-lat').value),
+            longitude: parseFloat(document.getElementById('est-lon').value),
+            area_hectares: parseFloat(document.getElementById('est-area').value)
+        };
+
+        try {
+            const req = await fetch(`${API_BASE}/api/estimate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await req.json();
+            
+            // Save for Model Intelligence page
+            if (req.ok) {
+                localStorage.setItem('bluechain_last_estimate', JSON.stringify(data));
+            }
+            
+            if (!req.ok) {
+                if (data.detail?.error === "HIGH_CLOUD_COVER") {
+                    resBox.classList.remove('hidden');
+                    resBox.innerHTML = `
+                        <div class="bg-[#B97A2E]/20 border border-[#B97A2E]/50 rounded p-4">
+                          <div class="text-[#f5a13d] font-semibold">☁️ High Cloud Cover Detected</div>
+                          <div class="text-[#f5a13d] text-sm mt-1">${data.detail.message}</div>
+                        </div>`;
+                    return;
+                } else if (data.detail?.error) {
+                     throw new Error(data.detail.message || JSON.stringify(data.detail));
+                } else {
+                     throw new Error(data.detail || JSON.stringify(data));
+                }
+            }
+            
+            if (req.ok) {
+                currentEstimate = data;
+                
+                // Populate Results
+                document.getElementById('res-scene').innerText = data.satellite_meta?.scene_id || "N/A";
+                document.getElementById('res-clouds').innerText = `${data.satellite_meta?.cloud_cover_percent || 0}%`;
+                
+                const ndviValue = data.NDVI !== undefined ? data.NDVI : (data.satellite_meta?.NDVI !== undefined ? data.satellite_meta.NDVI : null);
+                document.getElementById('res-ndvi').innerText = ndviValue !== null ? ndviValue.toFixed(4) : "N/A";
+                
+                const ndviSource = data.ndvi_source || data.satellite_meta?.ndvi_source || "MODELLED";
+                const ndviBadge = document.getElementById('res-ndvi-badge');
+                if (ndviBadge) {
+                    if (ndviSource === "REAL") {
+                        ndviBadge.innerText = "REAL";
+                        ndviBadge.className = "px-1 py-0.5 bg-[#173B52]/30 text-[#79B8C8] text-[10px] rounded border border-[#173B52]";
+                        ndviBadge.title = "Extracted from real Sentinel-2 S3 COG pixels";
+                    } else {
+                        ndviBadge.innerText = "MODELLED";
+                        ndviBadge.className = "px-1 py-0.5 bg-[#123C2A] text-[#8DA898] text-[10px] rounded border border-[#4F7F3A]/30";
+                        ndviBadge.title = "NDVI simulated from scene metadata fallback";
+                    }
+                }
+                
+                document.getElementById('res-density').innerText = `${Number(data.carbon_density_tC_ha).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} tC/ha`;
+                document.getElementById('res-total-stock').innerText = `${Number(data.total_carbon_stock_tC).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} tC`;
+                
+                const agbDensity = Number(data.agb_density_tC_ha);
+                const socDensity = Number(data.soc_density_tC_ha);
+                document.getElementById('res-agb-density').innerText = agbDensity.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+                document.getElementById('res-soc-density').innerText = socDensity.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+                document.getElementById('bar-agb').innerText = `${agbDensity.toFixed(1)} tC`;
+                document.getElementById('bar-soc').innerText = `${socDensity.toFixed(1)} tC`;
+                
+                document.getElementById('res-credits').innerText = Number(data.predicted_credits).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                // Populate Minting form
+                document.getElementById('mint-credits').value = data.predicted_credits;
+                document.getElementById('btn-mint').disabled = false;
+
+                // GMW Validation Badge
+                const gmwBadge = document.getElementById('gmw-badge');
+                if (data.gmw_validated) {
+                    gmwBadge.innerHTML = `<div class="flex items-center gap-2 text-[#72A84A] font-semibold text-sm px-3 py-2 bg-[#123C2A]/20 border border-[#4F7F3A]/30 rounded">
+                        <span>✅</span><span>GMW Verified — ${data.gmw_zone}</span>
+                    </div>`;
+                } else {
+                    gmwBadge.innerHTML = `<div class="bg-[#e05454]/10 border border-[#e05454]/30 text-[#e05454] p-3 rounded text-sm">
+                        <span class="font-bold">⚠️ WARNING:</span> ${data.gmw_warning}
+                    </div>`;
+                }
+                gmwBadge.classList.remove('hidden');
+
+                // Fraud Flag Banner
+                const fraudBanner = document.getElementById('fraud-banner');
+                if (data.fraud_flag) {
+                    const zoneText = data.gmw_zone ? data.gmw_zone : "No matching zone found";
+                    fraudBanner.innerHTML = `
+                        <div class="flex gap-3">
+                            <span class="text-2xl leading-none">⚠</span>
+                            <div>
+                                <div class="font-bold text-base mb-0.5" style="font-family:'Space Grotesk',sans-serif;">FRAUD FLAG — Location does not match verified mangrove boundaries</div>
+                                <div class="text-sm opacity-90">${zoneText}</div>
+                            </div>
+                        </div>
+                    `;
+                    fraudBanner.classList.remove('hidden');
+                } else {
+                    fraudBanner.classList.add('hidden');
+                }
+
+                // Render Credit Score
+                renderCreditScore(data.credit_score);
+
+                // Show model info note
+                document.getElementById('model-info-note').classList.remove('hidden');
+
+                // Add Model Intelligence link if missing
+                let mrvResultTitle = document.querySelector('#estimate-results h2');
+                if (mrvResultTitle && !document.getElementById('xai-link-btn')) {
+                    const xaiBtn = document.createElement('a');
+                    xaiBtn.id = 'xai-link-btn';
+                    xaiBtn.href = '/static/model-intelligence.html';
+                    xaiBtn.className = 'mt-4 w-full block text-center bg-[#123C2A]/40 hover:bg-[#123C2A] text-[#79B8C8] border border-[#123C2A] py-2 rounded text-sm font-medium transition-colors';
+                    xaiBtn.innerHTML = '<span class="mr-2">✨</span>OPEN MODEL EXPLANATION';
+                    document.getElementById('estimate-results').appendChild(xaiBtn);
+                }
+
+                resBox.classList.remove('hidden');
+            }
+        } catch (e) {
+            errBox.innerText = `Network Error: ${e.message}`;
+            errBox.classList.remove('hidden');
+        } finally {
+            btn.innerHTML = "Query STAC & Run ML Model";
+            btn.disabled = false;
+        }
+    }
+
+    function toggleXAIDetail() { /* no-op — XAI removed in Sundarbans model */ }
+
+
+    function renderXAI(explanation) { /* no-op — Sundarbans RF model does not return SHAP */ }
+
+    function renderCreditScore(cs) {
+        if (!cs) return;
+        document.getElementById('score-card').classList.remove('hidden');
+
+        const gradeEl = document.getElementById('score-grade');
+        gradeEl.textContent = cs.grade;
+        gradeEl.style.color = cs.color;
+
+        document.getElementById('score-total').textContent = cs.total_score + ' / 100';
+
+        const bar = document.getElementById('score-bar');
+        bar.style.width = cs.total_score + '%';
+        bar.style.backgroundColor = cs.color;
+
+        document.getElementById('score-market').textContent = cs.market_tier;
+
+        const maxMap = {
+            ndvi_health: 25, carbon_density_score: 20, scene_quality: 10,
+            location_verified: 20, restoration_potential: 15, model_confidence: 10
+        };
+        const labelMap = {
+            ndvi_health: 'NDVI Vegetation Health',
+            carbon_density_score: 'Carbon Density',
+            scene_quality: 'Scene Quality',
+            location_verified: 'GMW Location Verified',
+            restoration_potential: 'Restoration Potential',
+            model_confidence: 'Model Confidence'
+        };
+
+        const tbody = document.getElementById('score-breakdown');
+        tbody.innerHTML = '';
+        Object.entries(cs.breakdown).forEach(([key, val]) => {
+            tbody.innerHTML += `<tr>
+                <td class="py-1">${labelMap[key] || key}</td>
+                <td class="text-right py-1 text-white font-medium">${val}</td>
+                <td class="text-right py-1">${maxMap[key] || '—'}</td>
+            </tr>`;
+        });
+    }
+
+    async function verifyAndMint() {
+        const btn = document.getElementById('btn-mint');
+        const resBox = document.getElementById('mint-result');
+        const errBox = document.getElementById('mint-error');
+        
+        btn.innerText = "Signing & Broadcasting TX...";
+        btn.disabled = true;
+        resBox.classList.add('hidden');
+        errBox.classList.add('hidden');
+
+        if (!currentEstimate) return;
+
+        const payload = {
+            site_id: currentEstimate.site_id,
+            latitude: document.getElementById('est-lat').value.toString(),
+            longitude: document.getElementById('est-lon').value.toString(),
+            area_hectares: parseFloat(document.getElementById('est-area').value),
+            predicted_credits: currentEstimate.predicted_credits,
+            owner_address: document.getElementById('mint-owner').value
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/api/verify-and-mint`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': 'bluecarbon_oracle_2025_secure'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                resBox.classList.remove('hidden');
+
+                // Save mint data to localStorage so verify.html can pick up tx_hash
+                localStorage.setItem('bluechain_last_mint', JSON.stringify({
+                    site_id: payload.site_id,
+                    tx_hash: data.tx_hash,
+                    ipfs_proof: data.ipfs_proof
+                }));
+
+                // ── Populate On-Chain Receipt ──
+                const txEl = document.getElementById('cert-tx-hash');
+                txEl.innerText = data.tx_hash;
+                txEl.href = `https://sepolia.etherscan.io/tx/${data.tx_hash}`;
+                
+                const ipfsEl = document.getElementById('cert-ipfs');
+                ipfsEl.innerText = data.ipfs_proof || 'N/A';
+                if (data.ipfs_proof) ipfsEl.href = `https://ipfs.io/ipfs/${data.ipfs_proof}`;
+                
+                document.getElementById('cert-block').innerText = `Block: ${data.block_number || 'N/A'}`;
+                document.getElementById('cert-gas').innerText = `Gas used: ${data.gas_used ? data.gas_used.toLocaleString() : 'N/A'}`;
+
+                // ── Capture data for certificate generation ──
+                _lastMintResult = {
+                    tx_hash: data.tx_hash,
+                    status: data.status || 'success',
+                    block_number: data.block_number,
+                    ipfs_proof: data.ipfs_proof
+                };
+                _lastEstimateData = currentEstimate ? { ...currentEstimate,
+                    area_hectares: parseFloat(document.getElementById('est-area').value),
+                    latitude:      parseFloat(document.getElementById('est-lat').value),
+                    longitude:     parseFloat(document.getElementById('est-lon').value),
+                } : null;
+                // Show certificate panel
+                if (_lastMintResult && _lastEstimateData) {
+                    document.getElementById('cert-panel').classList.remove('hidden');
+                    document.getElementById('cert-gen-status').classList.add('hidden');
+                }
+                
+                // Fly to coordinate and pop-up
+                const lat = parseFloat(payload.latitude);
+                const lon = parseFloat(payload.longitude);
+                map.flyTo([lat, lon], 12);
+                L.popup().setLatLng([lat, lon])
+                 .setContent(`<div class="text-sm font-bold text-[#07140F]">Minted ${payload.predicted_credits.toLocaleString()} BCO2</div><div class="text-xs text-[#123C2A]">${payload.site_id}</div>`)
+                 .openOn(map);
+
+                loadRegistry(); // auto refresh ledger
+            } else {
+                if (data.detail && data.detail.error === "VALIDATION_EXPIRED") {
+                    errBox.innerHTML = `
+                        <div class="flex flex-col space-y-2">
+                            <span class="font-bold text-[#f5a13d]">⚠ Estimate Expired</span>
+                            <span class="text-[#8DA898]">Your estimate expired after 1 hour. Please re-run the estimate for this location.</span>
+                            <button onclick="runEstimate()" class="mt-2 w-full bg-[#123C2A] hover:bg-[#1a5438] text-white py-1.5 px-3 rounded border border-[#4F7F3A]/30 transition-colors">Re-run Estimate</button>
+                        </div>
+                    `;
+                    errBox.className = "mt-4 p-4 bg-[#B97A2E]/10 border border-[#B97A2E]/30 text-sm rounded";
+                    errBox.classList.remove('hidden');
+                } else if (data.detail && data.detail.error === "ALREADY_MINTED") {
+                    const siteId = payload.site_id;
+                    errBox.innerHTML = `
+                        <div class="flex flex-col space-y-2">
+                            <span class="font-bold text-[#79B8C8]">ℹ Already Minted</span>
+                            <span class="text-[#8DA898]">This site has already been verified and minted.</span>
+                            <button onclick="window.open('/verify/${siteId}', '_blank')" class="mt-2 w-full bg-[#123C2A] hover:bg-[#1a5438] text-white py-1.5 px-3 rounded border border-[#4F7F3A]/30 transition-colors">View Existing Project</button>
+                        </div>
+                    `;
+                    errBox.className = "mt-4 p-4 bg-[#173B52]/20 border border-[#173B52]/40 text-sm rounded";
+                    errBox.classList.remove('hidden');
+                } else {
+                    let errMsg = data.detail;
+                    if (typeof errMsg === 'object' && errMsg !== null) {
+                        errMsg = errMsg.message || JSON.stringify(errMsg);
+                    }
+                    errBox.innerText = `Transaction Failed: ${errMsg}`;
+                    errBox.className = "mt-4 p-3 bg-[#e05454]/10 border border-[#e05454]/30 text-[#e05454] text-sm rounded";
+                    errBox.classList.remove('hidden');
+                }
+                btn.disabled = false;
+            }
+        } catch (e) {
+            errBox.innerText = `Network Error: ${e.message}`;
+            errBox.classList.remove('hidden');
+            btn.disabled = false;
+        } finally {
+            btn.innerText = "Sign & Broadcast TX";
+        }
+    }
+
+    let _allRegistryProjects = [];
+    let _registrySortDir = 'desc';
+
+    function toggleRegistrySort() {
+        _registrySortDir = _registrySortDir === 'desc' ? 'asc' : 'desc';
+        document.getElementById('sort-icon-minted').innerText = _registrySortDir === 'desc' ? '▼' : '▲';
+        renderRegistry();
+    }
+
+    function renderRegistry() {
+        const tbody = document.getElementById('registry-body');
+        if (!_allRegistryProjects || _allRegistryProjects.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-[#8DA898]">No verified projects found.</td></tr>`;
+            return;
+        }
+
+        const filterStatus = document.getElementById('filter-status').value;
+        const filterStart = document.getElementById('filter-date-start').value;
+        const filterEnd = document.getElementById('filter-date-end').value;
+
+        // Apply filters
+        let filtered = _allRegistryProjects.filter(p => {
+            // Status
+            if (filterStatus === 'VERIFIED' && !p.is_verified) return false;
+            if (filterStatus === 'PENDING' && p.is_verified) return false;
+
+            // Date
+            if (filterStart || filterEnd) {
+                const pDate = new Date(p.timestamp * 1000);
+                pDate.setHours(0,0,0,0);
+                if (filterStart) {
+                    const start = new Date(filterStart);
+                    start.setHours(0,0,0,0);
+                    if (pDate < start) return false;
+                }
+                if (filterEnd) {
+                    const end = new Date(filterEnd);
+                    end.setHours(0,0,0,0);
+                    if (pDate > end) return false;
+                }
+            }
+            return true;
+        });
+
+        // Apply sort on BCO2 Minted
+        filtered.sort((a, b) => {
+            const valA = Number(a.credits_minted) || 0;
+            const valB = Number(b.credits_minted) || 0;
+            return _registrySortDir === 'desc' ? valB - valA : valA - valB;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-[#8DA898]">No projects match the current filters.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(p => {
+            const dateStr = p.timestamp ? new Date(p.timestamp * 1000).toLocaleDateString() : 'N/A';
+            return `
+                <tr class="hover:bg-[#123C2A]/30 transition-colors">
+                    <td class="px-4 py-3 font-medium text-[#F3F1E8]">${p.site_id}</td>
+                    <td class="px-4 py-3 text-[#8DA898]" title="${p.owner}">${p.owner.substring(0,6)}...${p.owner.substring(38)}</td>
+                    <td class="px-4 py-3">${p.area_hectares}</td>
+                    <td class="px-4 py-3">${p.carbon_tons}</td>
+                    <td class="px-4 py-3 font-bold text-[#72A84A]">${Number(p.credits_minted).toLocaleString()}</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${p.is_verified ? 'bg-[#123C2A] text-[#72A84A] border border-[#4F7F3A]/30' : 'bg-[#173B52]/30 text-[#79B8C8]'}">
+                            ${p.is_verified ? 'Verified' : 'Pending'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-[#8DA898]">${dateStr}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function loadRegistry() {
+        const tbody = document.getElementById('registry-body');
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/registry/projects`);
+            const data = await res.json();
+            
+            if (data.projects) {
+                _allRegistryProjects = data.projects;
+                renderRegistry();
+            } else {
+                _allRegistryProjects = [];
+                renderRegistry();
+            }
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-[#e05454]">Failed to load registry: ${e.message}</td></tr>`;
+        }
+    }
+
+    // Load registry on start
+    setTimeout(loadRegistry, 1000);
+
+    // Populate User Details
+    if (currentUser) {
+        document.getElementById('user-name').innerText = currentUser.displayName || currentUser.email;
+        document.getElementById('user-org').innerText = `${currentUser.organization || 'Workspace'} • ${currentUser.role || 'Member'}`;
+    }
+
+    // ── Certificate state ───────────────────────────────────────
+    // Populated directly in verifyAndMint() on success
+    let _lastMintResult   = null;
+    let _lastEstimateData = null;
+
+    // ── Certificate download ─────────────────────────────────
+    async function downloadCert() {
+        if (!BlueChainCert.canGenerate(_lastMintResult, _lastEstimateData)) {
+            const s = document.getElementById('cert-gen-status');
+            s.textContent = 'No verified mint data. Run estimate then mint first.';
+            s.classList.remove('hidden');
+            return;
+        }
+        const btn    = document.getElementById('btn-dl-cert');
+        const status = document.getElementById('cert-gen-status');
+        btn.textContent = 'Generating PDF...';
+        btn.disabled = true;
+        status.textContent = 'Building certificate — this takes a moment...';
+        status.classList.remove('hidden');
+
+        const demoId = JSON.parse(localStorage.getItem('bluechain_demo_identity') || 'null');
+        const ownerData = {
+            walletAddress: document.getElementById('mint-owner').value,
+            organization:  demoId?.organization || currentUser?.organization || 'BlueChain',
+            area_hectares: parseFloat(document.getElementById('est-area').value),
+            latitude:      parseFloat(document.getElementById('est-lat').value),
+            longitude:     parseFloat(document.getElementById('est-lon').value),
+        };
+
+        try {
+            const filename = await BlueChainCert.generate(_lastMintResult, _lastEstimateData, ownerData);
+            status.textContent = '✓ Certificate downloaded: ' + filename;
+        } catch (err) {
+            status.textContent = 'PDF generation failed: ' + err.message;
+            console.error('[Cert]', err);
+        } finally {
+            btn.innerHTML = `<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Download PDF`;
+            btn.disabled = false;
+        }
+    }
+
+    function viewVerifyPage() {
+        const siteId = _lastEstimateData?.site_id || currentEstimate?.site_id;
+        if (!siteId) return;
+        window.open('/verify/' + siteId, '_blank');
+    }
+
+    function copyToClipboard(text) {
+        if (navigator.clipboard && text && text !== 'N/A') {
+            navigator.clipboard.writeText(text);
+        }
+    }
+
+    // ── Web3 Node Health Check ───────────────────────────────────────
+    let _isWeb3Connected = false;
+    async function checkWeb3Health() {
+        const dot = document.getElementById('web3-dot');
+        const label = document.getElementById('web3-label');
+        const mintBtn = document.getElementById('btn-mint');
+        const mintWarn = document.getElementById('mint-offline-warn');
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/health`);
+            const data = await res.json();
+            
+            if (data.node_connected) {
+                _isWeb3Connected = true;
+                dot.className = "w-2 h-2 rounded-full bg-[#72A84A]";
+                label.innerText = "Chain Connected";
+                label.className = "text-[10px] font-bold tracking-wide uppercase text-[#72A84A]";
+                mintWarn.classList.add('hidden');
+                // Re-enable mint button if we already have an estimate
+                if (currentEstimate) mintBtn.disabled = false;
+            } else {
+                throw new Error("Node disconnected");
+            }
+        } catch (e) {
+            _isWeb3Connected = false;
+            dot.className = "w-2 h-2 rounded-full bg-[#ef4444]";
+            label.innerText = "Chain Offline — Mock Mode";
+            label.className = "text-[10px] font-bold tracking-wide uppercase text-[#ef4444]";
+            mintWarn.classList.remove('hidden');
+            // Allow mock mints
+            if (currentEstimate) mintBtn.disabled = false;
+        }
+    }
+    
+    // Initial check and 60s polling
+    checkWeb3Health();
+    setInterval(checkWeb3Health, 60000);
+
+    // ── Identity badge in nav: green dot if demo identity exists ───────
+    (function() {
+        const demoId = localStorage.getItem('bluechain_demo_identity');
+        const link   = document.getElementById('nav-identity-link');
+        if (link && demoId) {
+            link.innerHTML = 'Identity <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#72A84A;margin-left:4px;vertical-align:middle;"></span>';
+            link.title = 'Identity Active';
+        }
+    })();
+
+    // ── Auto-fill wallet from Aadhaar identity ──────────────────────────
+    (function() {
+        const identityRaw = localStorage.getItem('bluechain_demo_identity');
+        const ownerInput  = document.getElementById('mint-owner');
+        const hintLinked  = document.getElementById('identity-wallet-linked');
+        const hintMissing = document.getElementById('identity-wallet-hint');
+        if (!ownerInput) return;
+
+        if (identityRaw) {
+            try {
+                const id = JSON.parse(identityRaw);
+                if (id.walletAddress) {
+                    ownerInput.value = id.walletAddress;
+                    ownerInput.readOnly = true;
+                    ownerInput.classList.add('cursor-not-allowed', 'opacity-80');
+                    if (hintLinked)  hintLinked.classList.remove('hidden');
+                    if (hintMissing) hintMissing.classList.add('hidden');
+                    return;
+                }
+            } catch {}
+        }
+        // No linked identity — show the prompt
+        if (hintMissing) hintMissing.classList.remove('hidden');
+        if (hintLinked)  hintLinked.classList.add('hidden');
+    })();
+</script>
+
+</div>
+</body>
+</html>
